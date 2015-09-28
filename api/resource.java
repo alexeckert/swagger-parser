@@ -25,15 +25,11 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.*;
 
-@Path("/pet")
-@Api(value = "/pet", description = "Operations about pets", authorizations = {
-  @Authorization(value = "petstore_auth",
-  scopes = {
-    @AuthorizationScope(scope = "write:pets", description = "modify pets in your account"),
-    @AuthorizationScope(scope = "read:pets", description = "read your pets")
-  })
-})
-@Produces({"application/json", "application/xml"})
+/*api
+* @Path("/pet")
+* @Api(value = "/pet", description = "Operations about pets")
+* @Produces({"application/json", "application/xml"})
+*/
 public class PetResource {
   static PetData petData = new PetData();
   static JavaRestResourceUtil ru = new JavaRestResourceUtil();
