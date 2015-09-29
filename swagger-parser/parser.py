@@ -44,14 +44,17 @@ def parse_class(source_file):
     logger(produces)
     logger("-------------------------------")
     api = parse_api(class_annotations)
-    # logger(produces)
+    logger(api)
 
 def parse_path(annotations):
     # takes a string containing a subset of the annotations and returns the
     # value of the path variable
     matches = re.search('@Path\("(.*?)"\)', annotations, re.DOTALL)
-    return matches.group(1)
-
+    if matches:
+        return matches.group(1)
+    else:
+        return ''
+        
 def parse_produces(annotations):
     # takes a string containing a subset of the annotations and returns a list
     # containing the types it produces
@@ -67,6 +70,8 @@ def parse_api(annotations):
     # takes a string containing a subset of the annotations and returns a dict
     # containing the the key-value pair (value: '..', description: '..')
 
+    api_result = []
+
     matches = re.search('@Api\((.*?)\)', annotations, re.DOTALL)
     inner_content = matches.group(1)
 
@@ -79,9 +84,9 @@ def parse_api(annotations):
         key = key_matches.group(1)
         val = val_matches.group(1)
 
-        logger(key + '   ' + val)
+        api_result.append((key, val))
 
-    # return api
+    return dict(api_result)
 
 def get_api_annotated_files():
     # returns a list of files that have been annotated with @Api signifying
