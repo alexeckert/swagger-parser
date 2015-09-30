@@ -34,17 +34,19 @@ public class PetResource {
   static PetData petData = new PetData();
   static JavaRestResourceUtil ru = new JavaRestResourceUtil();
 
-  @GET
-  @Path("/{petId}")
-  @ApiOperation(value = "Find pet by ID",
-    notes = "Returns a pet when ID < 10.  ID > 10 or nonintegers will simulate API error conditions",
-    response = Pet.class,
-    authorizations = @Authorization(value = "api_key")
-  )
-  @ApiResponses(value = { @ApiResponse(code = 400, message = "Invalid ID supplied"),
-      @ApiResponse(code = 404, message = "Pet not found") })
-  public Response getPetById(
-      @ApiParam(value = "ID of pet that needs to be fetched", allowableValues = "range[1,5]", required = true) @PathParam("petId") Long petId)
+  /*api
+  * @GET
+  * @Path("/{petId}")
+  * @ApiOperation(value = "Find pet by ID",
+  *   notes = "Returns a pet when ID < 10.  ID > 10 or nonintegers will simulate API error conditions",
+  *   response = Pet.class,
+  *   authorizations = @Authorization(value = "api_key")
+  * )
+  * @ApiResponses(value = { @ApiResponse(code = 400, message = "Invalid ID supplied"),
+  *     @ApiResponse(code = 404, message = "Pet not found") })
+  * @ApiParam(value = "ID of pet that needs to be fetched", allowableValues = "range[1,5]", required = true) @PathParam("petId") Long
+  */
+  public Response getPetById(Long petId)
       throws com.github.kongchen.swagger.sample.wordnik.exception.NotFoundException {
     Pet pet = petData.getPetbyId(petId);
     if (null != pet) {
@@ -54,23 +56,27 @@ public class PetResource {
     }
   }
 
-  @DELETE
-  @Path("/{petId}")
-  @ApiOperation(value = "Deletes a pet")
-  @ApiResponses(value = { @ApiResponse(code = 400, message = "Invalid pet value")})
-  public Response deletePet(
-    @ApiParam() @HeaderParam("api_key") String apiKey,
-    @ApiParam(value = "Pet id to delete", required = true)@PathParam("petId") Long petId) {
+  /*api
+  * @DELETE
+  * @Path("/{petId}")
+  * @ApiOperation(value = "Deletes a pet")
+  * @ApiResponses(value = { @ApiResponse(code = 400, message = "Invalid pet value")})
+  * @ApiParam() @HeaderParam("api_key") String
+  * @ApiParam(value = "Pet id to delete", required = true) @PathParam("petId") Long
+  */
+  public Response<LIST> deletePet(String apiKey, Long petId) {
     petData.deletePet(petId);
     return Response.ok().build();
   }
 
-  @POST
-  @Consumes({"application/json", "application/xml"})
-  @ApiOperation(value = "Add a new pet to the store")
-  @ApiResponses(value = { @ApiResponse(code = 405, message = "Invalid input") })
-  public Response addPet(
-      @ApiParam(value = "Pet object that needs to be added to the store", required = true) Pet pet) {
+  /*api
+  * @POST
+  * @Consumes({"application/json", "application/xml"})
+  * @ApiOperation(value = "Add a new pet to the store")
+  * @ApiResponses(value = { @ApiResponse(code = 405, message = "Invalid input") })
+  * @ApiParam(value = "Pet object that needs to be added to the store", required = true) Pet
+  */
+  public Response addPet(Pet pet) {
     Pet updatedPet = petData.addPet(pet);
     return Response.ok().entity(updatedPet).build();
   }

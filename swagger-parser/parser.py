@@ -45,6 +45,70 @@ def parse_class(source_file):
     logger("-------------------------------")
     api = parse_api(class_annotations)
     logger(api)
+    logger("-------------------------------")
+    parse_methods(code)
+
+def parse_methods(code):
+    # takes in a source file and extracts all the method annotations
+
+    # regex for matching all /*api ... */ INCLUDING the method signature
+    pattern = re.compile('/\*api(.*?)\*/(.*?){', re.DOTALL)
+    # matches is a list containing 2-tuple
+    #   - first is everything between /*api ... */
+    #   - seconds is the method signature and potentially any other non-API
+    #     tags such as @Override or @Deprecated
+    annotation_matches = pattern.findall(code)
+
+    method_sig_regex = re.compile('(public|private|protected)\s([^\s]+)\s(\w+)', re.DOTALL)
+
+    for annotation in annotation_matches:
+        # make sure we only parse methods and not classes by detecting the
+        # @GET|POST|PUT|DELETE tag in the annotation
+        http_method = parse_http_method(annotation[0])
+        if http_method:
+            method_name, method_return = method_sig_analyzer(annotation[1])
+            path = parse_path(annotation[0])
+            logger(method_name + '   ' + method_return)
+
+def method_sig_analyzer(signature_param):
+    # this method analyzes a method signature and returns its constituents
+
+    # selection of the approprite regex is based on whether a static modifier
+    # exists in the method signature or not
+    method_sig_regex = re.compile('(public|private|protected)\s([^\s]+)\s(\w+)', re.DOTALL)
+
+    if 'static' in signature_param:
+        signature = signature_param.replace(' static', '')
+    else:
+        signature = signature_param
+
+    method_sig_raw = signature.replace('\n', ' ')
+    method_sig_matches = method_sig_regex.search(method_sig_raw)
+
+    method_name = method_sig_matches.group(3)
+    method_return = method_sig_matches.group(2)
+
+    return method_name, method_return
+
+def parse_api_operation(annotations):
+    # takes the content of @ApiOperation(...) operation and returns a dict of
+    # the attributes contained in tag body
+
+    # get internals of the @ApiOperation tag (up to and excluding the next tag
+    # in case it's declared on multiple lines)
+    matches = re.search('@ApiOperation\((.*?)\*.?@', s, re.DOTALL)
+
+
+
+def parse_http_method(annotations):
+    # takes an annotations string and returns the extracted HTTP method
+    # GET/POST/PUT/DELETE
+
+    matches = re.search('@(GET|POST|PUT|DELETE)', annotations, re.DOTALL)
+    if matches:
+        return matches.group(1)
+    else:
+        return None
 
 def parse_path(annotations):
     # takes a string containing a subset of the annotations and returns the
@@ -54,7 +118,7 @@ def parse_path(annotations):
         return matches.group(1)
     else:
         return ''
-        
+
 def parse_produces(annotations):
     # takes a string containing a subset of the annotations and returns a list
     # containing the types it produces

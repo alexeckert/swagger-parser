@@ -1,9 +1,12 @@
+# Inline Annotation Guidelines
+
 ### Annotation format:
 
 All annotations must adhere to the following format:
 
 ```
 /*api
+* ...
 * @ApiOperation(...)
 * ...
 */
@@ -20,19 +23,21 @@ This annotation is required in all the files that you want parsed as resources/c
 
 ### Format:
 
-Without any parameters:
+Both the *value* and *description* parameters <u>must</u> be specified in the @Api tag.
 
 ```
-@Api()
+@Api(value="onlinestore", description="Operations pertaining to Online Store")
 ```
 
-Or with a value specified
-```
-@Api(value = "/pet")
-```
+Format of @Api should always have value and description specified
 
-Tag order:
+## @GET/POST/PUT/DELETE
+
+An HTTP method <u>must</u> be specified for any Java method documented in the API. **The HTTP method must be the first tag specified in the list of annotations as shown below**:
 
 ```
-@Api(value = "/pet")
+/*api
+* @GET
+* ...
+*/
 ```
