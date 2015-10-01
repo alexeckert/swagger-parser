@@ -19,17 +19,3 @@ public Response getPetById(Long petId)
     throw new com.github.kongchen.swagger.sample.wordnik.exception.NotFoundException(404, "Pet not found");
   }
 }
-
-/*api
-* @DELETE
-* @Path("/{petId}")
-* @ApiOperation(value = "Deletes a pet")
-* @ApiResponses(value = { @ApiResponse(code = 400, message = "Invalid pet value")})
-* @ApiParam() @HeaderParam("api_key") String
-* @ApiParam(value = "Pet id to delete", required = true) @PathParam("petId") Long
-*/
-@override
-public Response deletePet(String apiKey, Long petId) {
-  petData.deletePet(petId);
-  return Response.ok().build();
-}

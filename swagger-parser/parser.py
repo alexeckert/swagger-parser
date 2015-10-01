@@ -14,17 +14,6 @@ def main():
     for source_file in api_annotated_files:
         parse_class(source_file)
 
-    # inside each class we parse the methods
-    # parse_methods()
-    #
-    # parse_api_operation()
-    #
-    # parse_api_reponses()
-    #
-    # parse_http_method()
-    #
-    # parse_path()
-
 def parse_class(source_file):
     # logic to extract the class data and associated annotations
 
@@ -35,7 +24,6 @@ def parse_class(source_file):
     matches = re.search('(/\*api(.*?)(public|private|protected|)(.*?)class(.*?){)', code, re.DOTALL)
 
     class_annotations = matches.group(0)
-    logger(class_annotations)
     logger("-------------------------------")
     path = parse_path(class_annotations)
     logger(path)
@@ -59,16 +47,16 @@ def parse_methods(code):
     #     tags such as @Override or @Deprecated
     annotation_matches = pattern.findall(code)
 
-    method_sig_regex = re.compile('(public|private|protected)\s([^\s]+)\s(\w+)', re.DOTALL)
-
     for annotation in annotation_matches:
         # make sure we only parse methods and not classes by detecting the
-        # @GET|POST|PUT|DELETE tag in the annotation
+        # @GET|POST|PUT|DELETE... tag in the annotation
         http_method = parse_http_method(annotation[0])
         if http_method:
             method_name, method_return = method_sig_analyzer(annotation[1])
             path = parse_path(annotation[0])
-            logger(method_name + '   ' + method_return)
+            api_operations = parse_api_operation(annotation[0])
+            logger(api_operations)
+            # logger(method_name + '   ' + method_return)
 
 def method_sig_analyzer(signature_param):
     # this method analyzes a method signature and returns its constituents
@@ -91,20 +79,28 @@ def method_sig_analyzer(signature_param):
     return method_name, method_return
 
 def parse_api_operation(annotations):
-    # takes the content of @ApiOperation(...) operation and returns a dict of
-    # the attributes contained in tag body
+    # takes a set of annotations and returns a dict of attributes contained
+    # in @ApiOperation tag body
 
-    # get internals of the @ApiOperation tag (up to and excluding the next tag
-    # in case it's declared on multiple lines)
-    matches = re.search('@ApiOperation\((.*?)\*.?@', s, re.DOTALL)
+    key_val_regex = re.compile('(\w+)\s*?=\s*?"(.*?)"', re.DOTALL)
+    parts = re.split('\*\s*?@', annotations)
+    for item in parts:
+        if 'ApiOperation' in item:
+            # logger(item)
+            api_op_regex = re.compile('ApiOperation\((.*)\)', re.DOTALL)
+            matches = api_op_regex.search(item)
+            key_val_annotations = matches.group(1)
 
+            key_val_list = key_val_regex.findall(key_val_annotations)
+
+    return dict(key_val_list)
 
 
 def parse_http_method(annotations):
     # takes an annotations string and returns the extracted HTTP method
-    # GET/POST/PUT/DELETE
+    # GET/POST/PUT/DELETE/...
 
-    matches = re.search('@(GET|POST|PUT|DELETE)', annotations, re.DOTALL)
+    matches = re.search('@(GET|POST|PUT|DELETE|OPTIONS|HEAD|PATCH)', annotations, re.DOTALL)
     if matches:
         return matches.group(1)
     else:
@@ -139,18 +135,14 @@ def parse_api(annotations):
     matches = re.search('@Api\((.*?)\)', annotations, re.DOTALL)
     inner_content = matches.group(1)
 
-    # split by comma
-    elements = [x for x in inner_content.split(",")]
+    # split by comma ONLY if the quotation marks (") match up
+    # this essentially allows commas within quotations as opposed to solely limiting
+    # the use of commas as an attribute delimiter
 
-    for element in elements:
-        key_matches = re.search('(\w+).?=', element, re.DOTALL)
-        val_matches = re.search('"(.*?)"', element, re.DOTALL)
-        key = key_matches.group(1)
-        val = val_matches.group(1)
+    key_val_regex = re.compile('(\w+)\s*?=\s*?"(.*?)"', re.DOTALL)
+    key_val_list = key_val_regex.findall(inner_content)
 
-        api_result.append((key, val))
-
-    return dict(api_result)
+    return dict(key_val_list)
 
 def get_api_annotated_files():
     # returns a list of files that have been annotated with @Api signifying
