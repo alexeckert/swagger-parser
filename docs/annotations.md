@@ -18,6 +18,18 @@ Some things to note:
 - Each new line should start with the `*` character, followed by a space and then the tag.
 - End the API annotation with `*/` on a separate line
 
+### Key-Value format:
+
+All key-value pairs should adhere to the following format within tags:
+
+`key = "some value"`
+
+For instance:
+
+```
+@Api(value = "/pet", description = "Operations about pets")
+```
+
 ## @Api
 This annotation is required in all the files that you want parsed as resources/controllers.
 
@@ -30,6 +42,10 @@ Both the *value* and *description* parameters <u>must</u> be specified in the @A
 ```
 
 Format of @Api should always have value and description specified
+
+## @ApiResponse
+
+
 
 ## @GET/POST/PUT/DELETE
 

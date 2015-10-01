@@ -39,7 +39,7 @@ public class PetResource {
   * @Path("/{petId}")
   * @ApiOperation(value = "Find pet by ID",
   *   notes = "Returns a pet when ID < 10.  ID > 10 or nonintegers will simulate API error conditions",
-  *   response = Pet.class
+  *   response = "Pet.class"
   * )
   * @ApiResponses(value = { @ApiResponse(code = 400, message = "Invalid ID supplied"),
   *     @ApiResponse(code = 404, message = "Pet not found") })
@@ -99,7 +99,7 @@ public class PetResource {
   * @Path("/findByStatus")
   * @ApiOperation(value = "Finds Pets by status",
   *   notes = "Multiple status values can be provided with comma seperated strings",
-  *   response = Pet.class,
+  *   response = "Pet.class",
   *   responseContainer = "List")
   * @ApiResponses(value = { @ApiResponse(code = 400, message = "Invalid status value") })
   * @ApiParam(value = "Status values that need to be considered for filter", required = true, defaultValue = "available", allowableValues = "available,pending,sold", allowMultiple = true) @QueryParam("status") String
@@ -113,7 +113,7 @@ public class PetResource {
   * @Path("/findByTags")
   * @ApiOperation(value = "Finds Pets by tags",
   *   notes = "Muliple tags can be provided with comma seperated strings. Use tag1, tag2, tag3 for testing.",
-  *   response = Pet.class,
+  *   response = "Pet.class",
   *   responseContainer = "List")
   * @ApiResponses(value = { @ApiResponse(code = 400, message = "Invalid tag value") })
   * @ApiParam(value = "Tags to filter by", required = true, allowMultiple = true) @QueryParam("tags") String
@@ -128,7 +128,7 @@ public class PetResource {
   * @Path("/{petId}")
   * @Consumes({MediaType.APPLICATION_FORM_URLENCODED})
   * @ApiOperation(value = "Updates a pet in the store with form data",
-  *   consumes = MediaType.APPLICATION_FORM_URLENCODED)
+  *   consumes = "MediaType.APPLICATION_FORM_URLENCODED")
   * @ApiResponses(value = {
   *   @ApiResponse(code = 405, message = "Invalid input")})
   * @ApiParam(value = "ID of pet that needs to be updated", required = true)@PathParam("petId") String

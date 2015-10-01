@@ -55,8 +55,11 @@ def parse_methods(code):
             method_name, method_return = method_sig_analyzer(annotation[1])
             path = parse_path(annotation[0])
             api_operations = parse_api_operation(annotation[0])
-            logger(api_operations)
+            # logger(api_operations)
             # logger(method_name + '   ' + method_return)
+            api_responses = parse_api_responses(annotation[0])
+            logger(api_responses)
+            logger("-------------------------------")
 
 def method_sig_analyzer(signature_param):
     # this method analyzes a method signature and returns its constituents
@@ -86,7 +89,6 @@ def parse_api_operation(annotations):
     parts = re.split('\*\s*?@', annotations)
     for item in parts:
         if 'ApiOperation' in item:
-            # logger(item)
             api_op_regex = re.compile('ApiOperation\((.*)\)', re.DOTALL)
             matches = api_op_regex.search(item)
             key_val_annotations = matches.group(1)
@@ -95,6 +97,26 @@ def parse_api_operation(annotations):
 
     return dict(key_val_list)
 
+def parse_api_responses(annotations):
+    # takes a set of annotations and returns a dict of attributes contained
+    # in @ApiResponses tag body
+
+    api_responses = []
+
+    key_val_regex = re.compile('(\w+)\s*?=\s*?(".*?"|[0-9]{3})', re.DOTALL)
+    inner_tag_regex = pattern = re.compile('@ApiResponses\((.*?}).*?\)', re.DOTALL)
+
+    inner_tag = inner_tag_regex.search(annotations)
+    response_annotations = inner_tag.group(1)
+
+    single_res_regex = re.compile('ApiResponse\((.*?)\)', re.DOTALL)
+    res_list = single_res_regex.findall(response_annotations)
+
+    for res in res_list:
+        key_val_list = key_val_regex.findall(res)
+        api_responses.append(key_val_list)
+
+    return dict(api_responses)
 
 def parse_http_method(annotations):
     # takes an annotations string and returns the extracted HTTP method
