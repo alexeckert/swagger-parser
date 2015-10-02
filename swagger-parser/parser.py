@@ -1,5 +1,6 @@
 import re
 from pathlib import Path
+import converter
 
 ################################################
 API_PATH = '../api/'
@@ -57,12 +58,15 @@ def parse_methods(code):
             api_operations = parse_api_operation(annotation[0])
             api_responses = parse_api_responses(annotation[0])
             consumes = parse_consumes(annotation[0])
+            implicit_params = parse_implicit_params(annotation[0])
+
             # logger(api_operations)
             # logger(method_name + '   ' + method_return)
             # logger(consumes)
-            logger("-------------------------------")
-            implicit_params = parse_implicit_params(annotation[0])
-            logger(implicit_params)
+            # logger("-------------------------------")
+            # logger(api_responses)
+
+            converter.convert_responses(api_responses)
 
 def method_sig_analyzer(signature_param):
     # this method analyzes a method signature and returns its constituents
@@ -103,7 +107,6 @@ def parse_api_operation(annotations):
 def parse_api_responses(annotations):
     # takes a set of annotations and returns a dict of attributes contained
     # in @ApiResponses tag body
-
     api_responses = []
 
     key_val_regex = re.compile('(\w+)\s*?=\s*?(".*?"|[0-9]{3})', re.DOTALL)
@@ -115,9 +118,14 @@ def parse_api_responses(annotations):
     single_res_regex = re.compile('ApiResponse\((.*?)\)', re.DOTALL)
     res_list = single_res_regex.findall(response_annotations)
 
+    res_code_regex = re.compile('code\s*?=\s*?([0-9]{3})', re.DOTALL)
+    res_msg_regex = re.compile('message\s*?=\s*?"(.*?)"', re.DOTALL)
+
     for res in res_list:
-        key_val_list = key_val_regex.findall(res)
-        api_responses.append(key_val_list)
+        code = res_code_regex.search(res).group(1)
+        message = res_msg_regex.search(res).group(1)
+        code_and_msg = (code, message)
+        api_responses.append(code_and_msg)
 
     return dict(api_responses)
 
@@ -214,10 +222,10 @@ def get_api_annotated_files():
     # that the file is a Swagger resource, as well as the start index of @Api(...)
     file_list = []
 
-    # get the list of all the files in the api directory
+    # get the list of all the java files in the api directory
     # all_files = [ abspath(f) for f in listdir(API_PATH) if isfile(join(API_PATH,f)) ]
     path = Path(API_PATH)
-    all_files = [ f.resolve() for f in list(path.rglob('*')) if f.is_file() ]
+    all_files = [ f.resolve() for f in list(path.rglob('*.java')) if f.is_file() ]
 
     # filter the files for ones containing the @Api declaration
     # eg: @Api(value = "/pet", description = "Operations about pets")
