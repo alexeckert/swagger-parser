@@ -43,7 +43,9 @@ public class PetResource {
   * )
   * @ApiResponses(value = { @ApiResponse(code = 400, message = "Invalid ID supplied"),
   *     @ApiResponse(code = 404, message = "Pet not found") })
-  * @ApiParam(value = "ID of pet that needs to be fetched", allowableValues = "range[1,5]", required = true) @PathParam("petId") Long
+  * @ApiImplicitParams(value = {
+  *   @ApiImplicitParam(name = "petId", value = "ID of pet that needs to be fetched", allowableValues = "range[1,5]", required = true, dataType = "Long", paramType = "path")
+  * })
   */
   public Response getPetById(Long petId)
       throws com.github.kongchen.swagger.sample.wordnik.exception.NotFoundException {
@@ -60,8 +62,10 @@ public class PetResource {
   * @Path("/{petId}")
   * @ApiOperation(value = "Deletes a pet")
   * @ApiResponses(value = { @ApiResponse(code = 400, message = "Invalid pet value")})
-  * @ApiParam() @HeaderParam("api_key") String
-  * @ApiParam(value = "Pet id to delete", required = true) @PathParam("petId") Long
+  * @ApiImplicitParams(value = {
+  *   @ApiImplicitParam(name = "apiKey", dataType = "String", paramType = "header"),
+  *   @ApiImplicitParam(name = "petId", value = "Pet id to delete", required = true, dataType = "Long", paramType = "path")
+  * })
   */
   public Response<LIST> deletePet(String apiKey, Long petId) {
     petData.deletePet(petId);
@@ -73,7 +77,12 @@ public class PetResource {
   * @Consumes({"application/json", "application/xml"})
   * @ApiOperation(value = "Add a new pet to the store")
   * @ApiResponses(value = { @ApiResponse(code = 405, message = "Invalid input") })
-  * @ApiParam(value = "Pet object that needs to be added to the store", required = true) Pet
+  * @ApiImplicitParams(value = {
+  *   @ApiImplicitParam(
+  *      name = "pet", value = "Pet object that needs to be added to the store",
+  *      required = true, paramType = "body"
+  *   )
+  * })
   */
   public Response addPet(Pet pet) {
     Pet updatedPet = petData.addPet(pet);
@@ -88,7 +97,6 @@ public class PetResource {
   *     @ApiResponse(code = 404, message = "Pet not found"),
   *     @ApiResponse(code = 405, message = "Validation exception") })
   * @ApiImplicitParams(value = {
-  *   @ApiImplicitParam(name = "pet", value = "Pet object that needs to be added to the store", required = true, dataType = "Pet", paramType = "body")
   *   @ApiImplicitParam(name = "pet", value = "Pet object that needs to be added to the store", required = true, dataType = "Pet", paramType = "body")
   * })
   */
@@ -105,7 +113,13 @@ public class PetResource {
   *   response = "Pet.class",
   *   responseContainer = "List")
   * @ApiResponses(value = { @ApiResponse(code = 400, message = "Invalid status value") })
-  * @ApiParam(value = "Status values that need to be considered for filter", required = true, defaultValue = "available", allowableValues = "available,pending,sold", allowMultiple = true) @QueryParam("status") String
+  * @ApiImplicitParams(value = {
+  *   @ApiImplicitParam(
+  *      name = "status", value = "Status values that need to be considered for filter",
+  *      required = true, defaultValue = "available", dataType = "String",
+  *      allowableValues = "available,pending,sold", allowMultiple = true, paramType = "query"
+  *   )
+  * })
   */
   public Response findPetsByStatus(String status) {
     return Response.ok(petData.findPetByStatus(status)).build();
@@ -119,7 +133,12 @@ public class PetResource {
   *   response = "Pet.class",
   *   responseContainer = "List")
   * @ApiResponses(value = { @ApiResponse(code = 400, message = "Invalid tag value") })
-  * @ApiParam(value = "Tags to filter by", required = true, allowMultiple = true) @QueryParam("tags") String
+  * @ApiImplicitParams(value = {
+  *   @ApiImplicitParam(
+  *      name = "tags", value = "Tags to filter by",
+  *      required = true, dataType = "String", allowMultiple = true, paramType = "query"
+  *   )
+  * })
   */
   @Deprecated
   public Response findPetsByTags(String tags) {
@@ -134,9 +153,20 @@ public class PetResource {
   *   consumes = "MediaType.APPLICATION_FORM_URLENCODED")
   * @ApiResponses(value = {
   *   @ApiResponse(code = 405, message = "Invalid input")})
-  * @ApiParam(value = "ID of pet that needs to be updated", required = true)@PathParam("petId") String
-  * @ApiParam(value = "Updated name of the pet", required = false)@FormParam("name") String
-  * @ApiParam(value = "Updated status of the pet", required = false)@FormParam("status") String
+  * @ApiImplicitParams(value = {
+  *   @ApiImplicitParam(
+  *      name = "petId", value = "ID of pet that needs to be updated",
+  *      required = true, dataType = "String", paramType = "path"
+  *   ),
+  *   @ApiImplicitParam(
+  *      name = "name", value = "Updated name of the pet",
+  *      required = false, dataType = "String", paramType = "form"
+  *   ),
+  *   @ApiImplicitParam(
+  *      name = "status", value = "Updated status of the pet",
+  *      required = false, dataType = "String", paramType = "formData"
+  *   )
+  * })
   */
   public Response updatePetWithForm (String petId, String name, String status) {
     System.out.println(name);
