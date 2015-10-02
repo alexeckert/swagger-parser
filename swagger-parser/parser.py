@@ -55,11 +55,14 @@ def parse_methods(code):
             method_name, method_return = method_sig_analyzer(annotation[1])
             path = parse_path(annotation[0])
             api_operations = parse_api_operation(annotation[0])
+            api_responses = parse_api_responses(annotation[0])
+            consumes = parse_consumes(annotation[0])
             # logger(api_operations)
             # logger(method_name + '   ' + method_return)
-            api_responses = parse_api_responses(annotation[0])
-            logger(api_responses)
+            # logger(consumes)
             logger("-------------------------------")
+            implicit_params = parse_implicit_params(annotation[0])
+            logger(implicit_params)
 
 def method_sig_analyzer(signature_param):
     # this method analyzes a method signature and returns its constituents
@@ -118,6 +121,32 @@ def parse_api_responses(annotations):
 
     return dict(api_responses)
 
+def parse_implicit_params(annotations):
+    # takes a set of annotations and returns a dict of attributes contained
+    # in @ApiImplicitParams tag body
+
+    implicit_params = []
+
+    key_val_regex = re.compile('(\w+)\s*?=\s*?(".*?"|true|false)', re.DOTALL)
+    inner_tag_regex = pattern = re.compile('@ApiImplicitParams\((.*?}).*?\)', re.DOTALL)
+
+    inner_tag = inner_tag_regex.search(annotations)
+
+    if inner_tag:
+        implicit_param_annotations = inner_tag.group(1)
+
+        single_param_regex = re.compile('ApiImplicitParam\((.*?)\)', re.DOTALL)
+        param_list = single_param_regex.findall(implicit_param_annotations)
+
+        for param in param_list:
+            key_val_list = key_val_regex.findall(param)
+            implicit_params.append(key_val_list)
+
+        return implicit_params
+
+    else:
+        return None
+
 def parse_http_method(annotations):
     # takes an annotations string and returns the extracted HTTP method
     # GET/POST/PUT/DELETE/...
@@ -142,6 +171,20 @@ def parse_produces(annotations):
     # containing the types it produces
     matches = re.search('@Produces\(\{(.*?)\}\)', annotations, re.DOTALL)
     inner_content = matches.group(1)
+
+    # strip away white space and double quotation marks (")
+    produces = [x.strip('" ') for x in inner_content.split(",")]
+
+    return produces
+
+def parse_consumes(annotations):
+    # takes a string containing a subset of the annotations and returns a list
+    # containing the types it consumes
+    matches = re.search('@Consumes\(\{(.*?)\}\)', annotations, re.DOTALL)
+    if matches:
+        inner_content = matches.group(1)
+    else:
+        return []
 
     # strip away white space and double quotation marks (")
     produces = [x.strip('" ') for x in inner_content.split(",")]

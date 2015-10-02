@@ -87,7 +87,10 @@ public class PetResource {
   * @ApiResponses(value = { @ApiResponse(code = 400, message = "Invalid ID supplied"),
   *     @ApiResponse(code = 404, message = "Pet not found"),
   *     @ApiResponse(code = 405, message = "Validation exception") })
-  * @ApiParam(value = "Pet object that needs to be added to the store", required = true) Pet
+  * @ApiImplicitParams(value = {
+  *   @ApiImplicitParam(name = "pet", value = "Pet object that needs to be added to the store", required = true, dataType = "Pet", paramType = "body")
+  *   @ApiImplicitParam(name = "pet", value = "Pet object that needs to be added to the store", required = true, dataType = "Pet", paramType = "body")
+  * })
   */
   public Response updatePet(Pet pet) {
     Pet updatedPet = petData.addPet(pet);
