@@ -80,7 +80,7 @@ public class PetResource {
   * @ApiImplicitParams(value = {
   *   @ApiImplicitParam(
   *      name = "pet", value = "Pet object that needs to be added to the store",
-  *      required = true, paramType = "body"
+  *      required = true, paramType = "body", dataType = "Pet"
   *   )
   * })
   */

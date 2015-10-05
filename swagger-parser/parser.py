@@ -64,9 +64,10 @@ def parse_methods(code):
             # logger(method_name + '   ' + method_return)
             # logger(consumes)
             # logger("-------------------------------")
-            # logger(api_responses)
+            # logger(implicit_params)
 
             converter.convert_responses(api_responses)
+            converter.convert_parameters(implicit_params)
 
 def method_sig_analyzer(signature_param):
     # this method analyzes a method signature and returns its constituents
@@ -148,7 +149,7 @@ def parse_implicit_params(annotations):
 
         for param in param_list:
             key_val_list = key_val_regex.findall(param)
-            implicit_params.append(key_val_list)
+            implicit_params.append(dict(key_val_list))
 
         return implicit_params
 
