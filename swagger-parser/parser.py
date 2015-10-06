@@ -66,7 +66,7 @@ def parse_methods(code):
             # logger("-------------------------------")
             # logger(implicit_params)
 
-            converter.convert_responses(api_responses)
+            converter.convert_responses(api_responses, api_operations)
             converter.convert_parameters(implicit_params)
 
 def method_sig_analyzer(signature_param):
