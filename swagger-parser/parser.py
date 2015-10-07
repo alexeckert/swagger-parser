@@ -35,9 +35,9 @@ def parse_class(source_file):
     api = parse_api(class_annotations)
     logger(api)
     logger("-------------------------------")
-    parse_methods(code)
+    parse_methods(code, path)
 
-def parse_methods(code):
+def parse_methods(code, class_path):
     # takes in a source file and extracts all the method annotations
 
     # regex for matching all /*api ... */ INCLUDING the method signature
@@ -62,12 +62,15 @@ def parse_methods(code):
 
             # logger(api_operations)
             # logger(method_name + '   ' + method_return)
-            # logger(consumes)
+            # logger(api_operations['notes'])
             # logger("-------------------------------")
             # logger(implicit_params)
 
-            converter.convert_responses(api_responses, api_operations)
-            converter.convert_parameters(implicit_params)
+            # converter.convert_responses(api_responses, api_operations)
+            # converter.convert_parameters(implicit_params)
+            # converter.assemble_method(http_method, method_name, produces,
+            #     consumes, path, class_path, api_responses,
+            #         api_operations, implicit_params)
 
 def method_sig_analyzer(signature_param):
     # this method analyzes a method signature and returns its constituents
@@ -173,17 +176,19 @@ def parse_path(annotations):
     if matches:
         return matches.group(1)
     else:
-        return ''
+        return None
 
 def parse_produces(annotations):
     # takes a string containing a subset of the annotations and returns a list
     # containing the types it produces
     matches = re.search('@Produces\(\{(.*?)\}\)', annotations, re.DOTALL)
-    inner_content = matches.group(1)
+    if matches:
+        inner_content = matches.group(1)
+    else:
+        return None
 
     # strip away white space and double quotation marks (")
     produces = [x.strip('" ') for x in inner_content.split(",")]
-
     return produces
 
 def parse_consumes(annotations):
@@ -193,12 +198,12 @@ def parse_consumes(annotations):
     if matches:
         inner_content = matches.group(1)
     else:
-        return []
+        return None
 
     # strip away white space and double quotation marks (")
-    produces = [x.strip('" ') for x in inner_content.split(",")]
+    consumes = [x.strip('" ') for x in inner_content.split(",")]
 
-    return produces
+    return consumes
 
 def parse_api(annotations):
     # takes a string containing a subset of the annotations and returns a dict

@@ -32,12 +32,35 @@ import json
     #       "400" : {
     #         "description" : "Invalid tag value"
     #       }
-    #     },
-    #     "security" : [ {
-    #       "petstore_auth" : [ "write:pets", "read:pets" ]
-    #     } ]
+    #     }
     #   }
     # }
+
+def assemble_method(http_method, method_name, produces, consumes, path,
+    class_path, api_responses, api_operations, implicit_params):
+    # method level assembly of Swagger objects in eg - "get" : {....}
+    method_obj = {}
+    http_verb = http_method.lower()
+    method_obj[http_verb] = {}
+
+    method_obj[http_verb]['operationId'] = method_name
+    method_obj[http_verb]['summary'] = api_operations['value']
+
+    if 'notes' in api_operations:
+        # if notes is not None
+        method_obj[http_verb]['description'] = api_operations['notes']
+
+    if not produces:
+        method_obj[http_verb]['produces'] = produces
+
+    if not consumes:
+        method_obj[http_verb]['consumes'] = consumes
+
+    method_obj[http_verb]['parameters'] = convert_parameters(implicit_params)
+    method_obj[http_verb]['responses'] = convert_responses(api_responses, api_operations)
+
+    print(json.dumps(method_obj, indent=4 * ' '))
+
 
 def convert_parameters(params):
     # converts a list of dictionary of implicit parameters to a parameter object
@@ -118,7 +141,7 @@ def convert_responses(responses, operations):
 
         res_obj['200'] = inner_dict
 
-    print(json.dumps(res_obj, indent=4 * ' '))
+    # print(json.dumps(res_obj, indent=4 * ' '))
     return res_obj
 
 def get_datatype_format(datatype_in):
