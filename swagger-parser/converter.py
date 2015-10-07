@@ -1,43 +1,37 @@
 import re
 import json
 
-    # "/pet/findByTags" : {
-    #   "get" : {
-    #     "tags" : [ "pet" ],
-    #     "summary" : "Finds Pets by tags",
-    #     "description" : "Muliple tags can be provided with comma seperated strings. Use tag1, tag2, tag3 for testing.",
-    #     "operationId" : "findPetsByTags",
-    #     "produces" : [ "application/xml", "application/json" ],
-    #     "parameters" : [ {
-    #       "name" : "tags",
-    #       "in" : "query",
-    #       "description" : "Tags to filter by",
-    #       "required" : true,
-    #       "type" : "array",
-    #       "items" : {
-    #         "type" : "string"
-    #       },
-    #       "collectionFormat" : "csv"
-    #     } ],
-    #     "responses" : {
-    #       "200" : {
-    #         "description" : "successful operation",
-    #         "schema" : {
-    #           "type" : "array",
-    #           "items" : {
-    #             "$ref" : "#/definitions/Pet"
-    #           }
-    #         }
-    #       },
-    #       "400" : {
-    #         "description" : "Invalid tag value"
-    #       }
-    #     }
-    #   }
-    # }
+def assemble_class(swagger_methods):
+    # the paths object that gets passed around from one assembled
+    # class to another
+    paths = {}
 
-def assemble_method(http_method, method_name, produces, consumes, path,
-    class_path, api_responses, api_operations, implicit_params):
+    for method in swagger_methods:
+        # go through each method and assemble it
+        method_obj = assemble_method(method['http_method'], method['method_name'],
+            method['produces'], method['consumes'], method['api_responses'],
+            method['api_operations'], method['implicit_params'])
+
+        # for each method that has been assembled, add it to the paths object
+        if method['path']:
+            # if the path var is not None, append it to the class path
+            full_path = method['class_path'] + method['path']
+        else:
+            # if the path var is None, use only the class_path
+            full_path = method['class_path']
+
+        # check if a path matches full_path has already been added
+        if full_path in paths:
+            # append the new HTTP verb to the existing path
+            paths[full_path] = method_obj
+        else:
+            paths[full_path] = {}
+            paths[full_path] = method_obj
+
+    debugger(json.dumps(paths, indent=4 * ' '))
+    return paths
+def assemble_method(http_method, method_name, produces, consumes,
+    api_responses, api_operations, implicit_params):
     # method level assembly of Swagger objects in eg - "get" : {....}
     method_obj = {}
     http_verb = http_method.lower()
@@ -50,17 +44,18 @@ def assemble_method(http_method, method_name, produces, consumes, path,
         # if notes is not None
         method_obj[http_verb]['description'] = api_operations['notes']
 
-    if not produces:
-        method_obj[http_verb]['produces'] = produces
-
-    if not consumes:
-        method_obj[http_verb]['consumes'] = consumes
+    # if not produces:
+    #     method_obj[http_verb]['produces'] = produces
+    #
+    # if not consumes:
+    #     method_obj[http_verb]['consumes'] = consumes
 
     method_obj[http_verb]['parameters'] = convert_parameters(implicit_params)
     method_obj[http_verb]['responses'] = convert_responses(api_responses, api_operations)
 
-    print(json.dumps(method_obj, indent=4 * ' '))
+    # print(json.dumps(method_obj, indent=4 * ' '))
 
+    return method_obj
 
 def convert_parameters(params):
     # converts a list of dictionary of implicit parameters to a parameter object
@@ -165,3 +160,26 @@ def get_datatype_format(datatype_in):
         return datatypes[datatype]
     else:
         return None
+
+
+def logger(msg):
+    OKBLUE = '\033[94m'
+    ENDC = '\033[0m'
+
+    print(colors.OKBLUE + str(msg) + colors.ENDC)
+
+def debugger(msg):
+    OKBLUE = '\033[94m'
+    ENDC = '\033[0m'
+
+    print(colors.WARNING + str(msg) + colors.ENDC)
+
+class colors:
+    HEADER = '\033[95m'
+    OKBLUE = '\033[94m'
+    OKGREEN = '\033[92m'
+    WARNING = '\033[93m'
+    FAIL = '\033[91m'
+    ENDC = '\033[0m'
+    BOLD = '\033[1m'
+    UNDERLINE = '\033[4m'

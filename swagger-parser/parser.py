@@ -11,9 +11,15 @@ def main():
     api_annotated_files = get_api_annotated_files()
     logger(str(api_annotated_files))
 
+    swagger_classes = []
+
     # for each file we parse the classes and, in turn, it's methods
     for source_file in api_annotated_files:
-        parse_class(source_file)
+        swagger_class = parse_class(source_file)
+        swagger_classes.append(swagger_class)
+
+    # once we have all the swagger classes we merge their paths objects and
+    # construct the swagger project info from the config file
 
 def parse_class(source_file):
     # logic to extract the class data and associated annotations
@@ -25,21 +31,18 @@ def parse_class(source_file):
     matches = re.search('(/\*api(.*?)(public|private|protected|)(.*?)class(.*?){)', code, re.DOTALL)
 
     class_annotations = matches.group(0)
-    logger("-------------------------------")
     path = parse_path(class_annotations)
-    logger(path)
-    logger("-------------------------------")
     produces = parse_produces(class_annotations)
-    logger(produces)
-    logger("-------------------------------")
     api = parse_api(class_annotations)
-    logger(api)
-    logger("-------------------------------")
-    parse_methods(code, path)
+
+    swagger_methods = parse_methods(code, path)
+    swagger_class = converter.assemble_class(swagger_methods)
+
+    return swagger_class
 
 def parse_methods(code, class_path):
     # takes in a source file and extracts all the method annotations
-
+    swagger_methods = []
     # regex for matching all /*api ... */ INCLUDING the method signature
     pattern = re.compile('/\*api(.*?)\*/(.*?){', re.DOTALL)
     # matches is a list containing 2-tuple
@@ -60,17 +63,24 @@ def parse_methods(code, class_path):
             consumes = parse_consumes(annotation[0])
             implicit_params = parse_implicit_params(annotation[0])
 
-            # logger(api_operations)
-            # logger(method_name + '   ' + method_return)
-            # logger(api_operations['notes'])
-            # logger("-------------------------------")
-            # logger(implicit_params)
+            method = {}
+            method['http_method'] = http_method
+            method['method_name'] = method_name
+            method['produces'] = None
+            method['consumes'] = consumes
+            method['path'] = path
+            method['class_path'] = class_path
+            method['api_responses'] = api_responses
+            method['api_operations'] = api_operations
+            method['implicit_params'] = implicit_params
 
-            # converter.convert_responses(api_responses, api_operations)
-            # converter.convert_parameters(implicit_params)
-            # converter.assemble_method(http_method, method_name, produces,
-            #     consumes, path, class_path, api_responses,
+            # swagger_method = converter.assemble_method(http_method, method_name,
+            #     produces, consumes, path, class_path, api_responses,
             #         api_operations, implicit_params)
+
+            swagger_methods.append(method)
+
+    return swagger_methods
 
 def method_sig_analyzer(signature_param):
     # this method analyzes a method signature and returns its constituents
@@ -249,7 +259,23 @@ def logger(msg):
     OKBLUE = '\033[94m'
     ENDC = '\033[0m'
 
-    print(OKBLUE + str(msg) + ENDC)
+    print(colors.OKBLUE + str(msg) + colors.ENDC)
+
+def debugger(msg):
+    OKBLUE = '\033[94m'
+    ENDC = '\033[0m'
+
+    print(colors.WARNING + str(msg) + colors.ENDC)
+
+class colors:
+    HEADER = '\033[95m'
+    OKBLUE = '\033[94m'
+    OKGREEN = '\033[92m'
+    WARNING = '\033[93m'
+    FAIL = '\033[91m'
+    ENDC = '\033[0m'
+    BOLD = '\033[1m'
+    UNDERLINE = '\033[4m'
 
 if __name__ == '__main__':
     main()
