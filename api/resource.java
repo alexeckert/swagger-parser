@@ -149,8 +149,7 @@ public class PetResource {
   * @POST
   * @Path("/{petId}")
   * @Consumes({MediaType.APPLICATION_FORM_URLENCODED})
-  * @ApiOperation(value = "Updates a pet in the store with form data",
-  *   consumes = "MediaType.APPLICATION_FORM_URLENCODED")
+  * @ApiOperation(value = "Updates a pet in the store with form data")
   * @ApiResponses(value = {
   *   @ApiResponse(code = 405, message = "Invalid input")})
   * @ApiImplicitParams(value = {
@@ -160,7 +159,7 @@ public class PetResource {
   *   ),
   *   @ApiImplicitParam(
   *      name = "name", value = "Updated name of the pet",
-  *      required = false, dataType = "String", paramType = "form"
+  *      required = false, dataType = "String", paramType = "formData"
   *   ),
   *   @ApiImplicitParam(
   *      name = "status", value = "Updated status of the pet",

@@ -1,6 +1,10 @@
 import re
 import json
 
+################################################
+PROJECT_INFO = 'project-info.json'
+################################################
+
 def assemble_class(swagger_methods):
     # the paths object that gets passed around from one assembled
     # class to another
@@ -28,7 +32,7 @@ def assemble_class(swagger_methods):
             paths[full_path] = {}
             paths[full_path] = method_obj
 
-    debugger(json.dumps(paths, indent=4 * ' '))
+    # debugger(json.dumps(paths, indent=4 * ' '))
     return paths
 def assemble_method(http_method, method_name, produces, consumes,
     api_responses, api_operations, implicit_params):
@@ -44,11 +48,11 @@ def assemble_method(http_method, method_name, produces, consumes,
         # if notes is not None
         method_obj[http_verb]['description'] = api_operations['notes']
 
-    # if not produces:
-    #     method_obj[http_verb]['produces'] = produces
-    #
-    # if not consumes:
-    #     method_obj[http_verb]['consumes'] = consumes
+    if produces:
+        method_obj[http_verb]['produces'] = produces
+
+    if consumes:
+        method_obj[http_verb]['consumes'] = consumes
 
     method_obj[http_verb]['parameters'] = convert_parameters(implicit_params)
     method_obj[http_verb]['responses'] = convert_responses(api_responses, api_operations)
@@ -101,9 +105,13 @@ def convert_parameters(params):
             inner_dict['description'] = param['value'].strip('"')
 
         if 'required' in param:
-            inner_dict['required'] = param['required']
+             is_required = param['required']
+             if is_required.lower() == 'true':
+                 inner_dict['required'] = True
+             else:
+                inner_dict['required'] = False
         else:
-            inner_dict['required'] = 'false'
+            inner_dict['required'] = False
 
         param_obj.append(inner_dict)
 
@@ -138,6 +146,17 @@ def convert_responses(responses, operations):
 
     # print(json.dumps(res_obj, indent=4 * ' '))
     return res_obj
+
+def assemble_project(complete_paths_obj):
+    # get info file
+    with open(PROJECT_INFO) as info_file:
+        final_obj = json.load(info_file)
+
+    # aggregate paths obj with project info
+    final_obj['paths'] = complete_paths_obj
+
+    with open('swagger.json', 'w') as outfile:
+        json.dump(final_obj, outfile, indent=4 * ' ')
 
 def get_datatype_format(datatype_in):
     # dictionary of name (key) and (type, format) tuple values from the Swagger spec

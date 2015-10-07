@@ -1,6 +1,7 @@
 import re
 from pathlib import Path
 import converter
+import json
 
 ################################################
 API_PATH = '../api/'
@@ -9,7 +10,7 @@ API_PATH = '../api/'
 def main():
     # sequentially executes the annotation extraction and processing steps
     api_annotated_files = get_api_annotated_files()
-    logger(str(api_annotated_files))
+    # logger(str(api_annotated_files))
 
     swagger_classes = []
 
@@ -20,6 +21,14 @@ def main():
 
     # once we have all the swagger classes we merge their paths objects and
     # construct the swagger project info from the config file
+    complete_paths_obj = {}
+    for paths_obj in swagger_classes:
+        for key, value in paths_obj.items():
+            complete_paths_obj[key] = value
+
+    converter.assemble_project(complete_paths_obj)
+
+    # logger(json.dumps(complete_paths_obj, indent=4 * ' '))
 
 def parse_class(source_file):
     # logic to extract the class data and associated annotations
@@ -61,12 +70,13 @@ def parse_methods(code, class_path):
             api_operations = parse_api_operation(annotation[0])
             api_responses = parse_api_responses(annotation[0])
             consumes = parse_consumes(annotation[0])
+            produces = parse_produces(annotation[0])
             implicit_params = parse_implicit_params(annotation[0])
 
             method = {}
             method['http_method'] = http_method
             method['method_name'] = method_name
-            method['produces'] = None
+            method['produces'] = produces
             method['consumes'] = consumes
             method['path'] = path
             method['class_path'] = class_path
