@@ -27,8 +27,7 @@ import javax.ws.rs.*;
 
 /*api
 * @Path("/pet")
-* @Api(value = "/pet", description = "Operations about pets")
-* @Produces({"application/json", "application/xml"})
+* @Api(value = "/pet", description = "Operations about pets", produces = "application/json, application/xml")
 */
 public class PetResource {
   static PetData petData = new PetData();
@@ -74,8 +73,7 @@ public class PetResource {
 
   /*api
   * @POST
-  * @Consumes({"application/json", "application/xml"})
-  * @ApiOperation(value = "Add a new pet to the store")
+  * @ApiOperation(value = "Add a new pet to the store", consumes = "application/json, application/xml")
   * @ApiResponses(value = { @ApiResponse(code = 405, message = "Invalid input") })
   * @ApiImplicitParams(value = {
   *   @ApiImplicitParam(
@@ -91,8 +89,7 @@ public class PetResource {
 
   /*api
   * @PUT
-  * @Consumes({"application/json", "application/xml"})
-  * @ApiOperation(value = "Update an existing pet")
+  * @ApiOperation(value = "Update an existing pet", consumes = "application/json, application/xml")
   * @ApiResponses(value = { @ApiResponse(code = 400, message = "Invalid ID supplied"),
   *     @ApiResponse(code = 404, message = "Pet not found"),
   *     @ApiResponse(code = 405, message = "Validation exception") })
@@ -148,8 +145,7 @@ public class PetResource {
   /*api
   * @POST
   * @Path("/{petId}")
-  * @Consumes({MediaType.APPLICATION_FORM_URLENCODED})
-  * @ApiOperation(value = "Updates a pet in the store with form data")
+  * @ApiOperation(value = "Updates a pet in the store with form data", consumes = "MediaType.APPLICATION_FORM_URLENCODED")
   * @ApiResponses(value = {
   *   @ApiResponse(code = 405, message = "Invalid input")})
   * @ApiImplicitParams(value = {
