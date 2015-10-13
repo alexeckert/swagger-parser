@@ -13,8 +13,7 @@ def assemble_class(swagger_methods):
     for method in swagger_methods:
         # go through each method and assemble it
         method_obj = assemble_method(method['http_method'], method['method_name'],
-            method['produces'], method['consumes'], method['api_responses'],
-            method['api_operations'], method['implicit_params'])
+            method['api_responses'], method['api_operations'], method['implicit_params'])
 
         # for each method that has been assembled, add it to the paths object
         if method['path']:
@@ -34,8 +33,9 @@ def assemble_class(swagger_methods):
 
     # debugger(json.dumps(paths, indent=4 * ' '))
     return paths
-def assemble_method(http_method, method_name, produces, consumes,
-    api_responses, api_operations, implicit_params):
+
+def assemble_method(http_method, method_name, api_responses, api_operations,
+    implicit_params):
     # method level assembly of Swagger objects in eg - "get" : {....}
     method_obj = {}
     http_verb = http_method.lower()
@@ -48,11 +48,14 @@ def assemble_method(http_method, method_name, produces, consumes,
         # if notes is not None
         method_obj[http_verb]['description'] = api_operations['notes']
 
-    if produces:
+    if 'produces' in api_operations:
+        produces = [x.strip(' ') for x in api_operations['produces'].split(",")]
         method_obj[http_verb]['produces'] = produces
 
-    if consumes:
+    if 'consumes' in api_operations:
+        consumes = [x.strip(' ') for x in api_operations['consumes'].split(",")]
         method_obj[http_verb]['consumes'] = consumes
+        print(consumes)
 
     method_obj[http_verb]['parameters'] = convert_parameters(implicit_params)
     method_obj[http_verb]['responses'] = convert_responses(api_responses, api_operations)

@@ -41,7 +41,6 @@ def parse_class(source_file):
 
     class_annotations = matches.group(0)
     path = parse_path(class_annotations)
-    produces = parse_produces(class_annotations)
     api = parse_api(class_annotations)
 
     swagger_methods = parse_methods(code, path)
@@ -69,24 +68,16 @@ def parse_methods(code, class_path):
             path = parse_path(annotation[0])
             api_operations = parse_api_operation(annotation[0])
             api_responses = parse_api_responses(annotation[0])
-            consumes = parse_consumes(annotation[0])
-            produces = parse_produces(annotation[0])
             implicit_params = parse_implicit_params(annotation[0])
 
             method = {}
             method['http_method'] = http_method
             method['method_name'] = method_name
-            method['produces'] = produces
-            method['consumes'] = consumes
             method['path'] = path
             method['class_path'] = class_path
             method['api_responses'] = api_responses
             method['api_operations'] = api_operations
             method['implicit_params'] = implicit_params
-
-            # swagger_method = converter.assemble_method(http_method, method_name,
-            #     produces, consumes, path, class_path, api_responses,
-            #         api_operations, implicit_params)
 
             swagger_methods.append(method)
 
