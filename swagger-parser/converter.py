@@ -26,10 +26,10 @@ def assemble_class(swagger_methods):
         # check if a path matches full_path has already been added
         if full_path in paths:
             # append the new HTTP verb to the existing path
-            paths[full_path] = method_obj
+            paths[full_path][method['http_method'].lower()] = method_obj
         else:
             paths[full_path] = {}
-            paths[full_path] = method_obj
+            paths[full_path][method['http_method'].lower()] = method_obj
 
     # debugger(json.dumps(paths, indent=4 * ' '))
     return paths
@@ -38,29 +38,26 @@ def assemble_method(http_method, method_name, api_responses, api_operations,
     implicit_params):
     # method level assembly of Swagger objects in eg - "get" : {....}
     method_obj = {}
-    http_verb = http_method.lower()
-    method_obj[http_verb] = {}
 
-    method_obj[http_verb]['operationId'] = method_name
-    method_obj[http_verb]['summary'] = api_operations['value']
+    method_obj['operationId'] = method_name
+    method_obj['summary'] = api_operations['value']
 
     if 'notes' in api_operations:
         # if notes is not None
-        method_obj[http_verb]['description'] = api_operations['notes']
+        method_obj['description'] = api_operations['notes']
 
     if 'produces' in api_operations:
         produces = [x.strip(' ') for x in api_operations['produces'].split(",")]
-        method_obj[http_verb]['produces'] = produces
+        method_obj['produces'] = produces
 
     if 'consumes' in api_operations:
         consumes = [x.strip(' ') for x in api_operations['consumes'].split(",")]
-        method_obj[http_verb]['consumes'] = consumes
+        method_obj['consumes'] = consumes
 
-    method_obj[http_verb]['parameters'] = convert_parameters(implicit_params)
-    method_obj[http_verb]['responses'] = convert_responses(api_responses, api_operations)
+    method_obj['parameters'] = convert_parameters(implicit_params)
+    method_obj['responses'] = convert_responses(api_responses, api_operations)
 
     # print(json.dumps(method_obj, indent=4 * ' '))
-
     return method_obj
 
 def convert_parameters(params):
