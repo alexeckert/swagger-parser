@@ -232,8 +232,6 @@ def parse_api(annotations):
     key_val_regex = re.compile('(\w+)\s*?=\s*?"(.*?)"', re.DOTALL)
     key_val_list = key_val_regex.findall(inner_content)
 
-    debugger(key_val_list)
-
     return dict(key_val_list)
 
 def get_api_annotated_files():

@@ -55,7 +55,6 @@ def assemble_method(http_method, method_name, api_responses, api_operations,
     if 'consumes' in api_operations:
         consumes = [x.strip(' ') for x in api_operations['consumes'].split(",")]
         method_obj[http_verb]['consumes'] = consumes
-        print(consumes)
 
     method_obj[http_verb]['parameters'] = convert_parameters(implicit_params)
     method_obj[http_verb]['responses'] = convert_responses(api_responses, api_operations)
