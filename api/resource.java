@@ -27,7 +27,7 @@ import javax.ws.rs.*;
 
 /*api
 * @Path("/pet")
-* @Api(value = "/pet", description = "Operations about pets")
+* @Api(value = "/pet", description = "Operations about pets", produces = "application/json, application/xml")
 * @Produces({"application/json", "application/xml"})
 */
 public class PetResource {
