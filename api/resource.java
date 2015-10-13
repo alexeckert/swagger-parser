@@ -27,16 +27,15 @@ import javax.ws.rs.*;
 
 /*api
 * @Path("/pet")
-* @Api(value = "/pet", description = "Operations about pets", produces = "application/json, application/xml")
+* @Api(description = "Operations about pets", produces = "application/json, application/xml")
 */
 public class PetResource {
   static PetData petData = new PetData();
   static JavaRestResourceUtil ru = new JavaRestResourceUtil();
 
   /*api
-  * @GET
   * @Path("/{petId}")
-  * @ApiOperation(value = "Find pet by ID",
+  * @ApiOperation(httpMethod = "GET", value = "Find pet by ID",
   *   notes = "Returns a pet when ID < 10.  ID > 10 or nonintegers will simulate API error conditions",
   *   response = "Pet"
   * )
@@ -57,9 +56,8 @@ public class PetResource {
   }
 
   /*api
-  * @DELETE
   * @Path("/{petId}")
-  * @ApiOperation(value = "Deletes a pet")
+  * @ApiOperation(httpMethod = "DELETE", value = "Deletes a pet")
   * @ApiResponses(value = { @ApiResponse(code = 400, message = "Invalid pet value")})
   * @ApiImplicitParams(value = {
   *   @ApiImplicitParam(name = "apiKey", dataType = "String", paramType = "header"),
@@ -72,8 +70,7 @@ public class PetResource {
   }
 
   /*api
-  * @POST
-  * @ApiOperation(value = "Add a new pet to the store", consumes = "application/json, application/xml")
+  * @ApiOperation(httpMethod = "POST", value = "Add a new pet to the store", consumes = "application/json, application/xml")
   * @ApiResponses(value = { @ApiResponse(code = 405, message = "Invalid input") })
   * @ApiImplicitParams(value = {
   *   @ApiImplicitParam(
@@ -88,8 +85,7 @@ public class PetResource {
   }
 
   /*api
-  * @PUT
-  * @ApiOperation(value = "Update an existing pet", consumes = "application/json, application/xml")
+  * @ApiOperation(httpMethod = "PUT", value = "Update an existing pet", consumes = "application/json, application/xml")
   * @ApiResponses(value = { @ApiResponse(code = 400, message = "Invalid ID supplied"),
   *     @ApiResponse(code = 404, message = "Pet not found"),
   *     @ApiResponse(code = 405, message = "Validation exception") })
@@ -103,9 +99,8 @@ public class PetResource {
   }
 
   /*api
-  * @GET
   * @Path("/findByStatus")
-  * @ApiOperation(value = "Finds Pets by status",
+  * @ApiOperation(httpMethod = "GET", value = "Finds Pets by status",
   *   notes = "Multiple status values can be provided with comma seperated strings",
   *   response = "Pet",
   *   responseContainer = "List")
@@ -123,9 +118,8 @@ public class PetResource {
   }
 
   /*api
-  * @GET
   * @Path("/findByTags")
-  * @ApiOperation(value = "Finds Pets by tags",
+  * @ApiOperation(httpMethod = "GET", value = "Finds Pets by tags",
   *   notes = "Muliple tags can be provided with comma seperated strings. Use tag1, tag2, tag3 for testing.",
   *   response = "Pet",
   *   responseContainer = "List")
@@ -143,9 +137,9 @@ public class PetResource {
   }
 
   /*api
-  * @POST
   * @Path("/{petId}")
-  * @ApiOperation(value = "Updates a pet in the store with form data", consumes = "MediaType.APPLICATION_FORM_URLENCODED")
+  * @ApiOperation(httpMethod = "POST", value = "Updates a pet in the store with form data",
+  *   consumes = "MediaType.APPLICATION_FORM_URLENCODED")
   * @ApiResponses(value = {
   *   @ApiResponse(code = 405, message = "Invalid input")})
   * @ApiImplicitParams(value = {

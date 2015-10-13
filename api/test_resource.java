@@ -1,15 +1,13 @@
 /*api
 * @Path("/order")
-* @Api(value = "/order", description = "Some ordering stuff")
-* @Produces({"application/json", "application/xml"})
+* @Api(value = "/order", description = "Some ordering stuff", produces = "application/json, application/xml")
 */
 public class OrderResource {
   static OrderData petData = new OrderData();
 
   /*api
-  * @GET
   * @Path("/{orderId}")
-  * @ApiOperation(value = "Find order by ID",
+  * @ApiOperation(httpMethod = "GET", value = "Find order by ID",
   *   notes = "get an order given it's ID...",
   *   response = "Pet"
   * )

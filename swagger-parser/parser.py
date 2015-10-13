@@ -61,9 +61,8 @@ def parse_methods(code, class_path):
 
     for annotation in annotation_matches:
         # make sure we only parse methods and not classes by detecting the
-        # @GET|POST|PUT|DELETE... tag in the annotation
-        http_method = parse_http_method(annotation[0])
-        if http_method:
+        # @ApiOperation tag in the annotation
+        if '@ApiOperation' in annotation[0]:
             method_name, method_return = method_sig_analyzer(annotation[1])
             path = parse_path(annotation[0])
             api_operations = parse_api_operation(annotation[0])
@@ -71,7 +70,7 @@ def parse_methods(code, class_path):
             implicit_params = parse_implicit_params(annotation[0])
 
             method = {}
-            method['http_method'] = http_method
+            method['http_method'] = api_operations['httpMethod']
             method['method_name'] = method_name
             method['path'] = path
             method['class_path'] = class_path
@@ -218,7 +217,7 @@ def parse_consumes(annotations):
 
 def parse_api(annotations):
     # takes a string containing a subset of the annotations and returns a dict
-    # containing the the key-value pair (value: '..', description: '..')
+    # containing the the key-value pair (description: '..')
 
     api_result = []
 
