@@ -71,7 +71,7 @@ def parse_methods(code, class_path):
 
             method = {}
             method['http_method'] = api_operations['httpMethod']
-            method['method_name'] = method_name
+            method['method_name'] = api_operations['nickname'] if 'nickname' in api_operations else method_name
             method['path'] = path
             method['class_path'] = class_path
             method['api_responses'] = api_responses

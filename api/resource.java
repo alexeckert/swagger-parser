@@ -57,7 +57,7 @@ public class PetResource {
 
   /*api
   * @Path("/{petId}")
-  * @ApiOperation(httpMethod = "DELETE", value = "Deletes a pet")
+  * @ApiOperation(httpMethod = "DELETE", value = "Deletes a pet", nickname = "deletePetNickname")
   * @ApiResponses(value = { @ApiResponse(code = 400, message = "Invalid pet value")})
   * @ApiImplicitParams(value = {
   *   @ApiImplicitParam(name = "apiKey", dataType = "String", paramType = "header"),
