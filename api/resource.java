@@ -27,7 +27,7 @@ import javax.ws.rs.*;
 
 /*api
 * @Path("/pet")
-* @Api(description = "Operations about pets", produces = "application/json, application/xml")
+* @Api(tags = {"adam", "eve"}, description = "Operations about pets", produces = "application/json, application/xml")
 */
 public class PetResource {
   static PetData petData = new PetData();
@@ -37,7 +37,7 @@ public class PetResource {
   * @Path("/{petId}")
   * @ApiOperation(httpMethod = "GET", value = "Find pet by ID",
   *   notes = "Returns a pet when ID < 10.  ID > 10 or nonintegers will simulate API error conditions",
-  *   response = "Pet"
+  *   response = "Pet", tags = {"pet", "animal"}
   * )
   * @ApiResponses(value = { @ApiResponse(code = 400, message = "Invalid ID supplied"),
   *     @ApiResponse(code = 404, message = "Pet not found") })

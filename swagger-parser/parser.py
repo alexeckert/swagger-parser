@@ -42,9 +42,11 @@ def parse_class(source_file):
     class_annotations = matches.group(0)
     path = parse_path(class_annotations)
     api = parse_api(class_annotations)
-
+    
+    print(api)
+    
     swagger_methods = parse_methods(code, path)
-    swagger_class = converter.assemble_class(swagger_methods)
+    swagger_class = converter.assemble_class(swagger_methods, api)
 
     return swagger_class
 
@@ -115,8 +117,22 @@ def parse_api_operation(annotations):
             key_val_annotations = matches.group(1)
 
             key_val_list = key_val_regex.findall(key_val_annotations)
+            key_val_list.extend(parse_tags(key_val_annotations))
 
     return dict(key_val_list)
+    
+def parse_tags(tags_annotation):
+    # takes a tag annotation and returns a list containing a single tuple
+    # as the key-value pair: ('tags', ["pet", "animal"])
+    
+    tags_regex = re.compile('(tags)\s*?=\s*?\{(.*?)\}', re.DOTALL)
+    tags_list = tags_regex.findall(tags_annotation)
+
+    if tags_list:
+        tags_obj = [x.strip('"') for x in re.split('\s?,\s?', tags_list[0][1])]
+        return [('tags', tags_obj)]
+    else:
+        return []
 
 def parse_api_responses(annotations):
     # takes a set of annotations and returns a dict of attributes contained
@@ -227,10 +243,10 @@ def parse_api(annotations):
     # split by comma ONLY if the quotation marks (") match up
     # this essentially allows commas within quotations as opposed to solely limiting
     # the use of commas as an attribute delimiter
-
     key_val_regex = re.compile('(\w+)\s*?=\s*?"(.*?)"', re.DOTALL)
     key_val_list = key_val_regex.findall(inner_content)
-
+    key_val_list.extend(parse_tags(inner_content))
+    
     return dict(key_val_list)
 
 def get_api_annotated_files():

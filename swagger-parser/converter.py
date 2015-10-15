@@ -5,7 +5,7 @@ import json
 PROJECT_INFO = 'project-info.json'
 ################################################
 
-def assemble_class(swagger_methods):
+def assemble_class(swagger_methods, api):
     # the paths object that gets passed around from one assembled
     # class to another
     paths = {}
@@ -14,6 +14,12 @@ def assemble_class(swagger_methods):
         # go through each method and assemble it
         method_obj = assemble_method(method['http_method'], method['method_name'],
             method['api_responses'], method['api_operations'], method['implicit_params'])
+
+        if 'tags' not in method_obj and 'tags' in api:
+            # if tags obj already exists in the method then it overwrites the
+            # class level declaration - so in this case we create a new one
+            method_obj['tags'] = api['tags']
+
 
         # for each method that has been assembled, add it to the paths object
         if method['path']:
@@ -53,6 +59,9 @@ def assemble_method(http_method, method_name, api_responses, api_operations,
     if 'consumes' in api_operations:
         consumes = [x.strip(' ') for x in api_operations['consumes'].split(",")]
         method_obj['consumes'] = consumes
+        
+    if 'tags' in api_operations:
+        method_obj['tags'] = api_operations['tags']
 
     method_obj['parameters'] = convert_parameters(implicit_params)
     method_obj['responses'] = convert_responses(api_responses, api_operations)
