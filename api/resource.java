@@ -42,7 +42,7 @@ public class PetResource {
   * @ApiResponses(value = { @ApiResponse(code = 400, message = "Invalid ID supplied"),
   *     @ApiResponse(code = 404, message = "Pet not found") })
   * @ApiImplicitParams(value = {
-  *   @ApiImplicitParam(name = "petId", value = "ID of pet that needs to be fetched", allowableValues = "range[1,5]", required = true, dataType = "Long", paramType = "path")
+  *   @ApiImplicitParam(name = "petId", value = "ID of pet that needs to be fetched", allowableValues = "range[-infinity , 9.0]", required = true, dataType = "Long", paramType = "path")
   * })
   */
   public Response getPetById(Long petId)
@@ -60,7 +60,7 @@ public class PetResource {
   * @ApiOperation(httpMethod = "DELETE", value = "Deletes a pet", nickname = "deletePetNickname")
   * @ApiResponses(value = { @ApiResponse(code = 400, message = "Invalid pet value")})
   * @ApiImplicitParams(value = {
-  *   @ApiImplicitParam(name = "apiKey", dataType = "String", paramType = "header"),
+  *   @ApiImplicitParam(name = "apiKey", dataType = "String", paramType = "header", allowableValues = "available,pending,sold"),
   *   @ApiImplicitParam(name = "petId", value = "Pet id to delete", required = true, dataType = "Long", paramType = "path")
   * })
   */

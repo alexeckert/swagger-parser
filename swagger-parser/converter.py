@@ -111,6 +111,41 @@ def convert_parameters(params):
 
         if 'value' in param:
             inner_dict['description'] = param['value'].strip('"')
+            
+        if 'allowableValues' in param:
+            allow_vals = param['allowableValues']
+            # if range, then minimum - maximum
+            if 'range' in allow_vals:
+                range_matches = re.search('range(\[|\()\s*?(\S.*?)\s*?,\s*?(\S.*?)\s*?(\]|\))', allow_vals)
+
+                # range_matches 1: [ or (, 2: start or -infinity, 3: end or infinity, 4: ] or )
+                start_bracket = range_matches.group(1)
+                end_bracket = range_matches.group(4)
+                                
+                if isfloat(range_matches.group(2)):
+                    start_range = float(range_matches.group(2))
+                elif isint(range_matches.group(2)):
+                    start_range = int(range_matches.group(2))
+                else:
+                    start_range = range_matches.group(2)
+                
+                if isfloat(range_matches.group(3)):
+                    end_range = float(range_matches.group(3))
+                elif isint(range_matches.group(3)):
+                    end_range = int(range_matches.group(3))
+                else:
+                    end_range = range_matches.group(3)
+                    
+                if type(start_range) != str:
+                    inner_dict['minimum'] = (start_range if start_bracket == '[' else start_range - 1)
+                
+                if type(end_range) != str:# and 'infinity' in end_range:
+                    inner_dict['maximum'] = (end_range if end_bracket == ']' else end_range - 1)
+            else:
+                # if comma-separated list, then enum
+                enum_matches = [x.strip('"') for x in re.split('\s?,\s?', allow_vals)]
+                inner_dict['enum'] = enum_matches
+            
 
         if 'required' in param:
              is_required = param['required']
@@ -188,6 +223,17 @@ def get_datatype_format(datatype_in):
     else:
         return None
 
+def isint(str_in):
+    if str_in.isdigit():
+        return True
+    else:
+        return False
+
+def isfloat(str_in):
+    if '.' in str_in and str_in.replace('.', '').isdigit():
+        return True
+    else:
+        return False
 
 def logger(msg):
     OKBLUE = '\033[94m'

@@ -43,8 +43,6 @@ def parse_class(source_file):
     path = parse_path(class_annotations)
     api = parse_api(class_annotations)
     
-    print(api)
-    
     swagger_methods = parse_methods(code, path)
     swagger_class = converter.assemble_class(swagger_methods, api)
 
