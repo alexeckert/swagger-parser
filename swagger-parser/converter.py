@@ -112,6 +112,16 @@ def convert_parameters(params):
         if 'value' in param:
             inner_dict['description'] = param['value'].strip('"')
             
+        if 'defaultValue' in param and 'type' in inner_dict:
+            default_val = param['defaultValue'].strip('"')
+            # check the dataType field (if if exists) to type-cast the defaultValue element
+            if inner_dict['type'] == 'string':
+                inner_dict['default'] = str(default_val)
+            elif inner_dict['type'] == 'integer':
+                inner_dict['default'] = int(default_val)
+            elif inner_dict['type'] == 'number':
+                inner_dict['default'] = float(default_val)
+                    
         if 'allowableValues' in param:
             allow_vals = param['allowableValues']
             # if range, then minimum - maximum
