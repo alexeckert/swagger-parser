@@ -134,28 +134,27 @@ def parse_tags(tags_annotation):
 
 def parse_api_responses(annotations):
     # takes a set of annotations and returns a dict of attributes contained
-    # in @ApiResponses tag body
+    # in @ApiResponses tag body  
     api_responses = []
 
     key_val_regex = re.compile('(\w+)\s*?=\s*?(".*?"|[0-9]{3})', re.DOTALL)
-    inner_tag_regex = pattern = re.compile('@ApiResponses\((.*?}).*?\)', re.DOTALL)
+    inner_tag_regex = re.compile('@ApiResponses\((.*?}).*?\)', re.DOTALL)
 
     inner_tag = inner_tag_regex.search(annotations)
-    response_annotations = inner_tag.group(1)
 
-    single_res_regex = re.compile('ApiResponse\((.*?)\)', re.DOTALL)
-    res_list = single_res_regex.findall(response_annotations)
+    if inner_tag:
+        response_annotations = inner_tag.group(1)
 
-    res_code_regex = re.compile('code\s*?=\s*?([0-9]{3})', re.DOTALL)
-    res_msg_regex = re.compile('message\s*?=\s*?"(.*?)"', re.DOTALL)
+        single_response_regex = re.compile('ApiResponse\((.*?)\)', re.DOTALL)
+        response_list = single_response_regex.findall(response_annotations)
 
-    for res in res_list:
-        code = res_code_regex.search(res).group(1)
-        message = res_msg_regex.search(res).group(1)
-        code_and_msg = (code, message)
-        api_responses.append(code_and_msg)
+        for response in response_list:
+            key_val_list = key_val_regex.findall(response)
+            api_responses.append(dict(key_val_list))
+        return api_responses
 
-    return dict(api_responses)
+    else:
+        return None
 
 def parse_implicit_params(annotations):
     # takes a set of annotations and returns a dict of attributes contained
@@ -164,7 +163,7 @@ def parse_implicit_params(annotations):
     implicit_params = []
 
     key_val_regex = re.compile('(\w+)\s*?=\s*?(".*?"|true|false)', re.DOTALL)
-    inner_tag_regex = pattern = re.compile('@ApiImplicitParams\((.*?}).*?\)', re.DOTALL)
+    inner_tag_regex = re.compile('@ApiImplicitParams\((.*?}).*?\)', re.DOTALL)
 
     inner_tag = inner_tag_regex.search(annotations)
 

@@ -14,7 +14,7 @@ public class OrderResource {
   * @ApiResponses(value = { @ApiResponse(code = 400, message = "Invalid ID supplied"),
   *     @ApiResponse(code = 404, message = "Order not found") })
   * @ApiImplicitParams(value = {
-  *   @ApiImplicitParam(name = "orderId", value = "ID of order that needs to be fetched", allowableValues = "range[1,5]", required = true, dataType = "Long", paramType = "path")
+  *   @ApiImplicitParam(name = "orderId", value = "ID of order that needs to be fetched", allowableValues = "range[1, 5]", required = true, dataType = "Long", paramType = "path")
   * })
   */
   public Response getOrderById(Long petId) {

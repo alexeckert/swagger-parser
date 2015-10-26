@@ -40,9 +40,11 @@ public class PetResource {
   *   response = "Pet", tags = {"pet", "animal"}
   * )
   * @ApiResponses(value = { @ApiResponse(code = 400, message = "Invalid ID supplied"),
-  *     @ApiResponse(code = 404, message = "Pet not found") })
+  *     @ApiResponse(code = 404, message = "Pet not found", response = "Pet", responseContainer = "List") })
   * @ApiImplicitParams(value = {
-  *   @ApiImplicitParam(name = "petId", value = "ID of pet that needs to be fetched", allowableValues = "range[-infinity , 9.0]", required = true, dataType = "Long", paramType = "path")
+  *   @ApiImplicitParam(name = "petId", value = "ID of pet that needs to be fetched", 
+  *     allowableValues = "range[-infinity , 9.0]", required = true, dataType = "Long", paramType = "path",
+  *     defaultValue = "2")
   * })
   */
   public Response getPetById(Long petId)

@@ -176,10 +176,23 @@ def convert_responses(responses, operations):
     # converts a dictionary of responses to a response object to be consumed by
     # SwaggerUI
     res_obj = {}
-    for key, value in responses.items():
+    for response in responses:
         inner_dict = {}
-        inner_dict['description'] = value
-        res_obj[key] = inner_dict
+        inner_dict['description'] = response['message'].strip('"')
+        
+        if 'response' in response:
+        # check to see if it contains any 'response' or 'responseContainer' keys
+
+            if 'responseContainer' in response:
+                # we have a schema with types and items objects
+                inner_dict['schema'] = {}
+                inner_dict['schema']['type'] = "array"
+                inner_dict['schema']['items'] = {"$ref" : "#/definitions/" + response['response'].strip('"')}
+            else:
+                # we only have a schema with a single $ref obj
+                inner_dict['schema'] = {"$ref" : "#/definitions/" + response['response']}
+        
+        res_obj[response['code']] = inner_dict
 
     if 'response' in operations:
         # check the operations param to see if it contains any 'response' or
