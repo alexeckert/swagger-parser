@@ -156,13 +156,39 @@ def parse_api_responses(annotations):
     else:
         return None
 
+# def parse_implicit_params(annotations):
+#     # takes a set of annotations and returns a dict of attributes contained
+#     # in @ApiImplicitParams tag body
+
+#     implicit_params = []
+
+#     key_val_regex = re.compile('(\w+)\s*?=\s*?(".*?"|true|false)', re.DOTALL)
+#     inner_tag_regex = re.compile('@ApiImplicitParams\((.*?}).*?\)', re.DOTALL)
+
+#     inner_tag = inner_tag_regex.search(annotations)
+
+#     if inner_tag:
+#         implicit_param_annotations = inner_tag.group(1)
+
+#         single_param_regex = re.compile('ApiImplicitParam\((.*?)\)', re.DOTALL)
+#         param_list = single_param_regex.findall(implicit_param_annotations)
+
+#         for param in param_list:
+#             key_val_list = key_val_regex.findall(param)
+#             implicit_params.append(dict(key_val_list))
+
+#         return implicit_params
+
+#     else:
+#         return None
+
 def parse_implicit_params(annotations):
     # takes a set of annotations and returns a dict of attributes contained
     # in @ApiImplicitParams tag body
 
     implicit_params = []
-
-    key_val_regex = re.compile('(\w+)\s*?=\s*?(".*?"|true|false)', re.DOTALL)
+    
+    greedy_key_val_rgx = re.compile('(\w+)\s*?=\s*?(".*"|true|false)', re.DOTALL)
     inner_tag_regex = re.compile('@ApiImplicitParams\((.*?}).*?\)', re.DOTALL)
 
     inner_tag = inner_tag_regex.search(annotations)
@@ -170,12 +196,44 @@ def parse_implicit_params(annotations):
     if inner_tag:
         implicit_param_annotations = inner_tag.group(1)
 
-        single_param_regex = re.compile('ApiImplicitParam\((.*?)\)', re.DOTALL)
-        param_list = single_param_regex.findall(implicit_param_annotations)
+        param_list = implicit_param_annotations.split('@ApiImplicitParam(')
 
-        for param in param_list:
-            key_val_list = key_val_regex.findall(param)
-            implicit_params.append(dict(key_val_list))
+        for param in param_list[1:]:
+            key_val_list = []
+            
+            attrb_list = ['access', 'allowableValues', 'allowMultiple',
+                'dataType', 'defaultValue', 'example', 'examples',
+                'name', 'paramType', 'required', 'value']
+            
+            for attrb in attrb_list:
+                attrb_regex = re.compile(attrb + '\s*?=\s*?', re.DOTALL)
+                attrb_match = attrb_regex.search(param)
+                
+                curr_attrb_index = attrb_list.index(attrb)
+                
+                if attrb_match:
+                    index = attrb_match.start()
+                    
+                    # get the index of the adjacent attribute
+                    next_attrb_list = [
+                            re.search(i + '\s*?=\s*?', param, re.DOTALL).start()
+                            # all the attributes except the current one being analyzed
+                            for i in attrb_list[:curr_attrb_index] + attrb_list[(curr_attrb_index + 1):]
+                            
+                            if  re.search(i + '\s*?=\s*?', param, re.DOTALL) and 
+                                re.search(i + '\s*?=\s*?', param, re.DOTALL).start() > index
+                    ]
+                            
+                    next_attrb_index = min(next_attrb_list) if next_attrb_list else len(param)
+    
+                    raw_attrb = param[index:next_attrb_index]
+                    key_val = greedy_key_val_rgx.search(raw_attrb)
+                    
+                    attrb_key = key_val.group(1)
+                    attrb_val = key_val.group(2)
+                    key_val_list.append((attrb_key, attrb_val))
+                
+        implicit_params.append(dict(key_val_list))
 
         return implicit_params
 
