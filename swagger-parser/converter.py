@@ -107,7 +107,9 @@ def convert_parameters(params):
 
         else:
             # it's a Swagger primitive so handle it normally
-            inner_dict['type'], inner_dict['format'] = datatype_format
+            inner_dict['type'] = datatype_format[0]
+            if datatype_format[1] != '':
+                inner_dict['format'] = datatype_format[1]
 
         if 'value' in param:
             inner_dict['description'] = param['value'].strip('"')
@@ -237,7 +239,8 @@ def get_datatype_format(datatype_in):
         'boolean':	('boolean', ''),
         'date':	('string', 'date'),
         'datetime':	('string', 'date-time'),
-        'password':	('string', 'password')
+        'password':	('string', 'password'),
+        'file': ('file', '')
     }
 
     datatype = datatype_in.lower()
