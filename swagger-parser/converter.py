@@ -32,10 +32,10 @@ def assemble_class(swagger_methods, api):
         # check if a path matches full_path has already been added
         if full_path in paths:
             # append the new HTTP verb to the existing path
-            paths[full_path][method['http_method'].lower()] = method_obj
+            paths[full_path][method['http_method'].lower().strip('"')] = method_obj
         else:
             paths[full_path] = {}
-            paths[full_path][method['http_method'].lower()] = method_obj
+            paths[full_path][method['http_method'].lower().strip('"')] = method_obj
 
     # debugger(json.dumps(paths, indent=4 * ' '))
     return paths
@@ -45,19 +45,19 @@ def assemble_method(http_method, method_name, api_responses, api_operations,
     # method level assembly of Swagger objects in eg - "get" : {....}
     method_obj = {}
 
-    method_obj['operationId'] = method_name
-    method_obj['summary'] = api_operations['value']
+    method_obj['operationId'] = method_name.strip('"')
+    method_obj['summary'] = api_operations['value'].strip('"')
 
     if 'notes' in api_operations:
         # if notes is not None
-        method_obj['description'] = api_operations['notes']
+        method_obj['description'] = api_operations['notes'].strip('"')
 
     if 'produces' in api_operations:
-        produces = [x.strip(' ') for x in api_operations['produces'].split(",")]
+        produces = [x.strip(' ').strip('"') for x in api_operations['produces'].split(",")]
         method_obj['produces'] = produces
 
     if 'consumes' in api_operations:
-        consumes = [x.strip(' ') for x in api_operations['consumes'].split(",")]
+        consumes = [x.strip(' ').strip('"') for x in api_operations['consumes'].split(",")]
         method_obj['consumes'] = consumes
         
     if 'tags' in api_operations:
@@ -99,11 +99,11 @@ def convert_parameters(params):
 
                 inner_dict['schema'] = {}
                 inner_dict['schema']['type'] = "array"
-                inner_dict['schema']['items'] = {"$ref" : "#/definitions/" + class_type}
+                inner_dict['schema']['items'] = {"$ref" : "#/definitions/" + class_type.strip('"')}
 
             else:
                 # create a single element schema since it's a single non-prim
-                inner_dict['schema'] = {"$ref" : "#/definitions/" + data_type_val}
+                inner_dict['schema'] = {"$ref" : "#/definitions/" + data_type_val.strip('"')}
 
         else:
             # it's a Swagger primitive so handle it normally
@@ -190,7 +190,7 @@ def convert_responses(responses, operations):
                 inner_dict['schema']['items'] = {"$ref" : "#/definitions/" + response['response'].strip('"')}
             else:
                 # we only have a schema with a single $ref obj
-                inner_dict['schema'] = {"$ref" : "#/definitions/" + response['response']}
+                inner_dict['schema'] = {"$ref" : "#/definitions/" + response['response'].strip('"')}
         
         res_obj[response['code']] = inner_dict
 
@@ -203,10 +203,10 @@ def convert_responses(responses, operations):
             # we have a schema with types and items objects
             inner_dict['schema'] = {}
             inner_dict['schema']['type'] = "array"
-            inner_dict['schema']['items'] = {"$ref" : "#/definitions/" + operations['response']}
+            inner_dict['schema']['items'] = {"$ref" : "#/definitions/" + operations['response'].strip('"')}
         else:
             # we only have a schema with a single $ref obj
-            inner_dict['schema'] = {"$ref" : "#/definitions/" + operations['response']}
+            inner_dict['schema'] = {"$ref" : "#/definitions/" + operations['response'].strip('"')}
 
         res_obj['200'] = inner_dict
 

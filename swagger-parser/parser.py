@@ -105,18 +105,52 @@ def method_sig_analyzer(signature_param):
 def parse_api_operation(annotations):
     # takes a set of annotations and returns a dict of attributes contained
     # in @ApiOperation tag body
-
-    key_val_regex = re.compile('(\w+)\s*?=\s*?"(.*?)"', re.DOTALL)
+    greedy_key_val_rgx = re.compile('(\w+)\s*?=\s*?(".*"|true|false|\{".*"\})', re.DOTALL)
     parts = re.split('\*\s*?@', annotations)
+    
+    key_val_list = []
+    
     for item in parts:
         if 'ApiOperation' in item:
             api_op_regex = re.compile('ApiOperation\((.*)\)', re.DOTALL)
             matches = api_op_regex.search(item)
             key_val_annotations = matches.group(1)
+            
+            attrb_list = ['value', 'authorizations', 'code',
+                'consumes', 'extensions', 'hidden', 'httpMethod',
+                'nickname', 'notes', 'produces', 'protocols', 'response',
+                'responseContainer', 'responseHeaders', 'responseReference', 'tags']
+            
+            for attrb in attrb_list:
+                attrb_regex = re.compile(attrb + '\s*?=\s*?', re.DOTALL)
+                attrb_match = attrb_regex.search(key_val_annotations)
+                
+                curr_attrb_index = attrb_list.index(attrb)
+                
+                if attrb_match:
+                    index = attrb_match.start()
+                    
+                    # get the index of the adjacent attribute
+                    next_attrb_list = [
+                            re.search(i + '\s*?=\s*?', key_val_annotations, re.DOTALL).start()
+                            # all the attributes except the current one being analyzed
+                            for i in attrb_list[:curr_attrb_index] + attrb_list[(curr_attrb_index + 1):]
+                            
+                            if  re.search(i + '\s*?=\s*?', key_val_annotations, re.DOTALL) and 
+                                re.search(i + '\s*?=\s*?', key_val_annotations, re.DOTALL).start() > index
+                    ]
+                            
+                    next_attrb_index = min(next_attrb_list) if next_attrb_list else len(key_val_annotations)
+    
+                    raw_attrb = key_val_annotations[index:next_attrb_index]
+                    key_val = greedy_key_val_rgx.search(raw_attrb)
 
-            key_val_list = key_val_regex.findall(key_val_annotations)
+                    attrb_key = key_val.group(1)
+                    attrb_val = key_val.group(2)
+                    key_val_list.append((attrb_key, attrb_val))
+
             key_val_list.extend(parse_tags(key_val_annotations))
-
+    
     return dict(key_val_list)
     
 def parse_tags(tags_annotation):
@@ -155,33 +189,7 @@ def parse_api_responses(annotations):
 
     else:
         return None
-
-# def parse_implicit_params(annotations):
-#     # takes a set of annotations and returns a dict of attributes contained
-#     # in @ApiImplicitParams tag body
-
-#     implicit_params = []
-
-#     key_val_regex = re.compile('(\w+)\s*?=\s*?(".*?"|true|false)', re.DOTALL)
-#     inner_tag_regex = re.compile('@ApiImplicitParams\((.*?}).*?\)', re.DOTALL)
-
-#     inner_tag = inner_tag_regex.search(annotations)
-
-#     if inner_tag:
-#         implicit_param_annotations = inner_tag.group(1)
-
-#         single_param_regex = re.compile('ApiImplicitParam\((.*?)\)', re.DOTALL)
-#         param_list = single_param_regex.findall(implicit_param_annotations)
-
-#         for param in param_list:
-#             key_val_list = key_val_regex.findall(param)
-#             implicit_params.append(dict(key_val_list))
-
-#         return implicit_params
-
-#     else:
-#         return None
-
+        
 def parse_implicit_params(annotations):
     # takes a set of annotations and returns a dict of attributes contained
     # in @ApiImplicitParams tag body
@@ -233,7 +241,7 @@ def parse_implicit_params(annotations):
                     attrb_val = key_val.group(2)
                     key_val_list.append((attrb_key, attrb_val))
                 
-        implicit_params.append(dict(key_val_list))
+            implicit_params.append(dict(key_val_list))
 
         return implicit_params
 
