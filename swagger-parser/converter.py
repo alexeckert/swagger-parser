@@ -13,7 +13,7 @@ def assemble_class(swagger_methods, api):
     for method in swagger_methods:
         # go through each method and assemble it
         method_obj = assemble_method(method['http_method'], method['method_name'],
-            method['api_responses'], method['api_operations'], method['implicit_params'])
+            method['api_responses'], method['api_operations'], method['implicit_params'], api)
 
         if 'tags' not in method_obj and 'tags' in api:
             # if tags obj already exists in the method then it overwrites the
@@ -41,7 +41,7 @@ def assemble_class(swagger_methods, api):
     return paths
 
 def assemble_method(http_method, method_name, api_responses, api_operations,
-    implicit_params):
+    implicit_params, api):
     # method level assembly of Swagger objects in eg - "get" : {....}
     method_obj = {}
 
@@ -52,6 +52,16 @@ def assemble_method(http_method, method_name, api_responses, api_operations,
         # if notes is not None
         method_obj['description'] = api_operations['notes'].strip('"')
 
+    if 'produces' in api:
+        produces = [x.strip(' ').strip('"') for x in api['produces'].split(",")]
+        method_obj['produces'] = produces
+        
+    if 'consumes' in api:
+        consumes = [x.strip(' ').strip('"') for x in api['consumes'].split(",")]
+        method_obj['consumes'] = consumes
+        
+    # if the @ApiOperation has a produces/consumes attribute, overwrite the resource
+    # level comsumes/produces declaration in @Api (if any)    
     if 'produces' in api_operations:
         produces = [x.strip(' ').strip('"') for x in api_operations['produces'].split(",")]
         method_obj['produces'] = produces
