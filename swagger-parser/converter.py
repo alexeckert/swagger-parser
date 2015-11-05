@@ -73,8 +73,11 @@ def assemble_method(http_method, method_name, api_responses, api_operations,
     if 'tags' in api_operations:
         method_obj['tags'] = api_operations['tags']
 
-    method_obj['parameters'] = convert_parameters(implicit_params)
-    method_obj['responses'] = convert_responses(api_responses, api_operations)
+    if implicit_params:
+        method_obj['parameters'] = convert_parameters(implicit_params)
+    
+    if api_responses:
+        method_obj['responses'] = convert_responses(api_responses, api_operations)
 
     # print(json.dumps(method_obj, indent=4 * ' '))
     return method_obj
