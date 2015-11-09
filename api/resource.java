@@ -37,10 +37,10 @@ public class PetResource {
   * @Path("/{petId}")
   * @ApiOperation(httpMethod = "GET", value = "Find pet by ID",
   *   notes = "Returns a pet when ID < 10.  ID > 10 or nonintegers will simulate API error conditions",
-  *   response = "Pet", tags = {"pet", "animal"}, produces = "application/html"
+  *   response = "string", responseContainer="List", tags = {"pet", "animal"}, produces = "application/html"
   * )
   * @ApiResponses(value = { @ApiResponse(code = 400, message = "Invalid ID supplied"),
-  *     @ApiResponse(code = 404, message = "Pet not found", response = "Pet", responseContainer = "List") })
+  *     @ApiResponse(code = 404, message = "Pet not found", response = "string", responseContainer = "List") })
   * @ApiImplicitParams(value = {
   *   @ApiImplicitParam(name = "petId", value = "ID of pet that needs to be fetched", 
   *     allowableValues = "range[-infinity , 9.0]", required = true, dataType = "Long", paramType = "path",
@@ -60,7 +60,7 @@ public class PetResource {
   /*api
   * @Path("/{petId}")
   * @ApiOperation(httpMethod = "DELETE", value = "Deletes a pet", nickname = "deletePetNickname")
-  * @ApiResponses(value = { @ApiResponse(code = 400, message = "Invalid pet value")})
+  * @ApiResponses(value = { @ApiResponse(code = 400, message = "Invalid pet value", response="file")})
   * @ApiImplicitParams(value = {
   *   @ApiImplicitParam(name = "apiKey", dataType = "String", paramType = "header", allowableValues = "available,pending,sold"),
   *   @ApiImplicitParam(name = "petId", value = "Pet id to delete", required = true, dataType = "Long", paramType = "path")

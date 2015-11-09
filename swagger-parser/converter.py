@@ -202,10 +202,23 @@ def convert_responses(responses, operations):
                 # we have a schema with types and items objects
                 inner_dict['schema'] = {}
                 inner_dict['schema']['type'] = "array"
-                inner_dict['schema']['items'] = {"$ref" : "#/definitions/" + response['response'].strip('"')}
+                
+                data_type_val = response['response'].strip('"')
+                datatype_format = get_datatype_format(data_type_val)
+                if not datatype_format:
+                    # We got None so the datatype is not a Swagger primitive
+                    inner_dict['schema']['items'] = {"$ref" : "#/definitions/" + data_type_val}
+                else:
+                    inner_dict['schema']['items'] = {"type": datatype_format[0]}
             else:
-                # we only have a schema with a single $ref obj
-                inner_dict['schema'] = {"$ref" : "#/definitions/" + response['response'].strip('"')}
+                # we only have a schema with a single $ref obj or primitive
+                data_type_val = response['response'].strip('"')
+                datatype_format = get_datatype_format(data_type_val)
+                if not datatype_format:
+                    # We got None so the datatype is not a Swagger primitive
+                    inner_dict['schema'] = {"$ref" : "#/definitions/" + data_type_val}
+                else:
+                    inner_dict['schema'] = {"type": datatype_format[0]}
         
         res_obj[response['code']] = inner_dict
 
@@ -218,10 +231,23 @@ def convert_responses(responses, operations):
             # we have a schema with types and items objects
             inner_dict['schema'] = {}
             inner_dict['schema']['type'] = "array"
-            inner_dict['schema']['items'] = {"$ref" : "#/definitions/" + operations['response'].strip('"')}
+            
+            data_type_val = operations['response'].strip('"')
+            datatype_format = get_datatype_format(data_type_val)
+            if not datatype_format:
+                # We got None so the datatype is not a Swagger primitive
+                inner_dict['schema']['items'] = {"$ref" : "#/definitions/" + data_type_val}
+            else:
+                inner_dict['schema']['items'] = {"type": datatype_format[0]}
         else:
-            # we only have a schema with a single $ref obj
-            inner_dict['schema'] = {"$ref" : "#/definitions/" + operations['response'].strip('"')}
+            # we only have a schema with a single $ref obj or primitive
+            data_type_val = operations['response'].strip('"')
+            datatype_format = get_datatype_format(data_type_val)
+            if not datatype_format:
+                # We got None so the datatype is not a Swagger primitive
+                inner_dict['schema'] = {"$ref" : "#/definitions/" + data_type_val}
+            else:
+                inner_dict['schema'] = {"type": datatype_format[0]}
 
         res_obj['200'] = inner_dict
 
