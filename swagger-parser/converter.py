@@ -2,7 +2,7 @@ import re
 import json
 
 ################################################
-PROJECT_INFO = 'project-info.json'
+PROJECT_INFO = '../api/SwaggerConfig.json'
 ################################################
 
 def assemble_class(swagger_methods, api):
@@ -255,12 +255,18 @@ def convert_responses(responses, operations):
     return res_obj
 
 def assemble_project(complete_paths_obj):
+    final_obj = {}
+    
     # get info file
     with open(PROJECT_INFO) as info_file:
-        final_obj = json.load(info_file)
+        metadata = json.load(info_file)
 
     # aggregate paths obj with project info
     final_obj['paths'] = complete_paths_obj
+    
+    # add the metadata to the final object
+    final_obj['swagger'] = metadata['swagger']
+    final_obj['info'] = metadata['info']
 
     with open('swagger.json', 'w') as outfile:
         json.dump(final_obj, outfile, indent=4 * ' ')
