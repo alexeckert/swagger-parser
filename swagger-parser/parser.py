@@ -1,21 +1,32 @@
 import re
 from pathlib import Path
 import converter
+import assembler
 import json
+import argparse
 
 ################################################
-API_PATH = '../api/'
+PROJECT_INFO = '../api/SwaggerConfig.json'
 ################################################
 
 def main():
+    arg_parser = argparse.ArgumentParser()
+    arg_parser.add_argument("-p", "--production", help="generate a production version of the swagger.json",
+                    action="store_true")    
+    args = arg_parser.parse_args()
+    
+    
+    # get info file
+    with open(PROJECT_INFO) as info_file:
+        info_obj = json.load(info_file)
+    
     # sequentially executes the annotation extraction and processing steps
-    api_annotated_files = get_api_annotated_files()
-    # logger(str(api_annotated_files))
+    resource_list, model_list = get_resource_model_lists(info_obj['include'], args.production)
 
     swagger_classes = []
 
     # for each file we parse the classes and, in turn, it's methods
-    for source_file in api_annotated_files:
+    for source_file in resource_list:
         swagger_class = parse_class(source_file)
         swagger_classes.append(swagger_class)
 
@@ -25,8 +36,11 @@ def main():
     for paths_obj in swagger_classes:
         for key, value in paths_obj.items():
             complete_paths_obj[key] = value
-
-    converter.assemble_project(complete_paths_obj)
+    
+    metadata = {}
+    metadata['swagger'] = info_obj['swagger']
+    metadata['info'] = info_obj['info']
+    assembler.assemble_project(complete_paths_obj, model_list, metadata)
 
     # logger(json.dumps(complete_paths_obj, indent=4 * ' '))
 
@@ -34,7 +48,8 @@ def parse_class(source_file):
     # logic to extract the class data and associated annotations
 
     # find api declaration associated to the class
-    with source_file.open() as curr_file:
+    with open(source_file) as curr_file:
+        print(source_file)
         code = curr_file.read()
 
     matches = re.search('(/\*api(.*?)(public|private|protected|)(.*?)class(.*?){)', code, re.DOTALL)
@@ -312,13 +327,12 @@ def parse_api(annotations):
     
     return dict(key_val_list)
 
-def get_api_annotated_files():
+def get_api_annotated_files_old():
     # returns a list of files that have been annotated with @Api signifying
     # that the file is a Swagger resource, as well as the start index of @Api(...)
     file_list = []
 
     # get the list of all the java files in the api directory
-    # all_files = [ abspath(f) for f in listdir(API_PATH) if isfile(join(API_PATH,f)) ]
     path = Path(API_PATH)
     all_files = [ f.resolve() for f in list(path.rglob('*.java')) if f.is_file() ]
 
@@ -333,6 +347,30 @@ def get_api_annotated_files():
             file_list.append(curr_file)
 
     return file_list
+    
+def get_resource_model_lists(include_list, production):
+    # returns a list of files that have been annotated with @Api signifying
+    # that the file is a Swagger resource, as well as the start index of @Api(...)
+    resource_list = []
+    model_list = []
+    
+    # read the include list and only add the production=true files
+    if production:
+        for file_obj in include_list:          
+            if file_obj['production'] and file_obj['resource']:
+                resource_list.append('../api/' + file_obj['resource'])
+                
+            if file_obj['production'] and file_obj['model']:
+                model_list.append('../api/' + file_obj['model'])
+    else:
+        for file_obj in include_list:          
+            if file_obj['resource']:
+                resource_list.append('../api/' + file_obj['resource'])
+                
+            if file_obj['model']:
+                model_list.append('../api/' + file_obj['model'])
+
+    return resource_list, model_list
 
 def logger(msg):
     OKBLUE = '\033[94m'
