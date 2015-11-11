@@ -22,6 +22,7 @@ def main():
     
     # sequentially executes the annotation extraction and processing steps
     resource_list, model_list = get_resource_model_lists(info_obj['include'], args.production)
+    tag_list = get_top_level_tags(info_obj['include'], args.production)
 
     swagger_classes = []
 
@@ -40,7 +41,7 @@ def main():
     metadata = {}
     metadata['swagger'] = info_obj['swagger']
     metadata['info'] = info_obj['info']
-    assembler.assemble_project(complete_paths_obj, model_list, metadata)
+    assembler.assemble_project(complete_paths_obj, model_list, tag_list, metadata)
 
     # logger(json.dumps(complete_paths_obj, indent=4 * ' '))
 
@@ -371,6 +372,21 @@ def get_resource_model_lists(include_list, production):
                 model_list.append('../api/' + file_obj['model'])
 
     return resource_list, model_list
+
+def get_top_level_tags(include_list, production):
+    # returns a list of all the tags plus their descriptions   
+    tag_list = []
+    
+    if production:
+        for file_obj in include_list:          
+            if file_obj['production'] and file_obj['name']:
+                tag_list.append((file_obj['name'], file_obj['description']))
+    else:
+        for file_obj in include_list:          
+            if file_obj['name']:
+                tag_list.append((file_obj['name'], file_obj['description']))
+                
+    return tag_list
 
 def logger(msg):
     OKBLUE = '\033[94m'
