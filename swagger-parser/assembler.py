@@ -28,5 +28,5 @@ def assemble_project(complete_paths_obj, model_list, tags, metadata):
             'description': tag[1]
         })
 
-    with open('swagger.json', 'w') as outfile:
+    with open('apis.json', 'w') as outfile:
         json.dump(final_obj, outfile, indent=4 * ' ')
