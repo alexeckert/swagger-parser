@@ -4,6 +4,7 @@ import converter
 import assembler
 import json
 import argparse
+import os
 
 ################################################
 PROJECT_INFO = '../api/SwaggerConfig.json'
@@ -50,7 +51,6 @@ def parse_class(source_file):
 
     # find api declaration associated to the class
     with open(source_file) as curr_file:
-        print(source_file)
         code = curr_file.read()
 
     matches = re.search('(/\*api(.*?)(public|private|protected|)(.*?)class(.*?){)', code, re.DOTALL)
@@ -359,18 +359,34 @@ def get_resource_model_lists(include_list, production):
     if production:
         for file_obj in include_list:          
             if file_obj['production'] and file_obj['resource']:
-                resource_list.append('../api/' + file_obj['resource'])
-                
+                file_path = '../api/' + file_obj['resource']
+                if os.path.isfile(file_path):
+                    resource_list.append(file_path)
+                else:
+                    print('WARNING: ' + file_path + ' does not exist')
+                                    
             if file_obj['production'] and file_obj['model']:
-                model_list.append('../api/' + file_obj['model'])
+                file_path = '../api/' + file_obj['model']
+                if os.path.isfile(file_path):
+                    model_list.append(file_path)
+                else:
+                    print('WARNING: ' + file_path + ' does not exist')
     else:
         for file_obj in include_list:          
             if file_obj['resource']:
-                resource_list.append('../api/' + file_obj['resource'])
-                
+                file_path = '../api/' + file_obj['resource']
+                if os.path.isfile(file_path):
+                    resource_list.append(file_path)
+                else:
+                    print('WARNING: ' + file_path + ' does not exist')
+                    
             if file_obj['model']:
-                model_list.append('../api/' + file_obj['model'])
-
+                file_path = '../api/' + file_obj['model']
+                if os.path.isfile(file_path):
+                    model_list.append(file_path)
+                else:
+                    print('WARNING: ' + file_path + ' does not exist')
+                    
     return resource_list, model_list
 
 def get_top_level_tags(include_list, production):

@@ -13,11 +13,17 @@ def assemble_project(complete_paths_obj, model_list, tags, metadata):
     
     # inject the models into the final object
     for model_file in model_list:
-        with open(model_file) as mdl:
-            model_obj = json.load(mdl)
-        
-        for model in model_obj['definitions']:
-            final_obj['definitions'][model] = model_obj['definitions'][model]
+        try:
+            with open(model_file) as mdl:
+                model_obj = json.load(mdl)
+                
+            try:
+                for model in model_obj['definitions']:
+                    final_obj['definitions'][model] = model_obj['definitions'][model]
+            except:
+                print('WARNING: ' + model_file + ' contains an empty JSON object')
+        except ValueError:
+            print('WARNING: ' + model_file + ' is either empty or contains malformed JSON')
     
     # inject top-level tags
     final_obj['tags'] = []
