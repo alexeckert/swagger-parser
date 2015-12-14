@@ -42,6 +42,9 @@ def main():
     metadata = {}
     metadata['swagger'] = info_obj['swagger']
     metadata['info'] = info_obj['info']
+    metadata['host'] = info_obj['host']
+    metadata['basePath'] = info_obj['basePath']
+    metadata['schemes'] = info_obj['schemes']
     assembler.assemble_project(complete_paths_obj, model_list, tag_list, metadata)
 
     # logger(json.dumps(complete_paths_obj, indent=4 * ' '))

@@ -8,7 +8,10 @@ def assemble_project(complete_paths_obj, model_list, tags, metadata):
     
     # add the metadata to the final object
     final_obj['swagger'] = metadata['swagger']
-    final_obj['info'] = metadata['info']            
+    final_obj['info'] = metadata['info']
+    final_obj['host'] = metadata['host']
+    final_obj['basePath'] = metadata['basePath']
+    final_obj['schemes'] = metadata['schemes']
     final_obj['definitions'] = {}
     
     # inject the models into the final object
