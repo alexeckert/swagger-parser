@@ -132,6 +132,11 @@ def convert_parameters(params):
                 inner_dict['default'] = int(default_val)
             elif inner_dict['type'] == 'number':
                 inner_dict['default'] = float(default_val)
+            elif inner_dict['type'] == 'boolean':
+                if default_val in('true', 'True'):
+                    inner_dict['default'] = True
+                else:
+                    inner_dict['default'] = False
                     
         if 'allowableValues' in param:
             allow_vals = param['allowableValues']
