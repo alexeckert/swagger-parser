@@ -38,4 +38,4 @@ def assemble_project(complete_paths_obj, model_list, tags, metadata):
         })
 
     with open('apis.json', 'w') as outfile:
-        json.dump(final_obj, outfile, indent=4 * ' ')
+        json.dump(final_obj, outfile, sort_keys=True,  indent=4 * ' ')
