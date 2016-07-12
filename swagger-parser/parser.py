@@ -13,14 +13,14 @@ PROJECT_INFO = '../api/SwaggerConfig.json'
 def main():
     arg_parser = argparse.ArgumentParser()
     arg_parser.add_argument("-p", "--production", help="generate a production version of the swagger.json",
-                    action="store_true")    
+                    action="store_true")
     args = arg_parser.parse_args()
-    
-    
+
+
     # get info file
     with open(PROJECT_INFO) as info_file:
         info_obj = json.load(info_file)
-    
+
     # sequentially executes the annotation extraction and processing steps
     resource_list, model_list = get_resource_model_lists(info_obj['include'], args.production)
     tag_list = get_top_level_tags(info_obj['include'], args.production)
@@ -29,7 +29,7 @@ def main():
 
     # for each file we parse the classes and, in turn, it's methods
     for source_file in resource_list:
-        swagger_class = parse_class(source_file)
+        swagger_class = parse_class(source_file, args.production)
         swagger_classes.append(swagger_class)
 
     # once we have all the swagger classes we merge their paths objects and
@@ -38,7 +38,7 @@ def main():
     for paths_obj in swagger_classes:
         for key, value in paths_obj.items():
             complete_paths_obj[key] = value
-    
+
     metadata = {}
     metadata['swagger'] = info_obj['swagger']
     metadata['info'] = info_obj['info']
@@ -49,7 +49,7 @@ def main():
 
     # logger(json.dumps(complete_paths_obj, indent=4 * ' '))
 
-def parse_class(source_file):
+def parse_class(source_file, production):
     # logic to extract the class data and associated annotations
 
     # find api declaration associated to the class
@@ -61,13 +61,13 @@ def parse_class(source_file):
     class_annotations = matches.group(0)
     path = parse_path(class_annotations)
     api = parse_api(class_annotations)
-    
-    swagger_methods = parse_methods(code, path)
+
+    swagger_methods = parse_methods(code, path, production)
     swagger_class = converter.assemble_class(swagger_methods, api)
 
     return swagger_class
 
-def parse_methods(code, class_path):
+def parse_methods(code, class_path, production):
     # takes in a source file and extracts all the method annotations
     swagger_methods = []
     # regex for matching all /*api ... */ INCLUDING the method signature
@@ -97,7 +97,10 @@ def parse_methods(code, class_path):
             method['api_operations'] = api_operations
             method['implicit_params'] = implicit_params
 
-            swagger_methods.append(method)
+            if '@Internal' in annotation[0] and production:
+                continue
+            else:
+                swagger_methods.append(method)
 
     return swagger_methods
 
@@ -126,41 +129,41 @@ def parse_api_operation(annotations):
     # in @ApiOperation tag body
     greedy_key_val_rgx = re.compile('(\w+)\s*?=\s*?(".*"|true|false|\{".*"\})', re.DOTALL)
     parts = re.split('\*\s*?@', annotations)
-    
+
     key_val_list = []
-    
+
     for item in parts:
         if 'ApiOperation' in item:
             api_op_regex = re.compile('ApiOperation\((.*)\)', re.DOTALL)
             matches = api_op_regex.search(item)
             key_val_annotations = matches.group(1)
-            
+
             attrb_list = ['value', 'authorizations', 'code',
                 'consumes', 'extensions', 'hidden', 'httpMethod',
                 'nickname', 'notes', 'produces', 'protocols', 'response',
                 'responseContainer', 'responseHeaders', 'responseReference', 'tags']
-            
+
             for attrb in attrb_list:
                 attrb_regex = re.compile(attrb + '\s*?=\s*?', re.DOTALL)
                 attrb_match = attrb_regex.search(key_val_annotations)
-                
+
                 curr_attrb_index = attrb_list.index(attrb)
-                
+
                 if attrb_match:
                     index = attrb_match.start()
-                    
+
                     # get the index of the adjacent attribute
                     next_attrb_list = [
                             re.search(i + '\s*?=\s*?', key_val_annotations, re.DOTALL).start()
                             # all the attributes except the current one being analyzed
                             for i in attrb_list[:curr_attrb_index] + attrb_list[(curr_attrb_index + 1):]
-                            
-                            if  re.search(i + '\s*?=\s*?', key_val_annotations, re.DOTALL) and 
+
+                            if  re.search(i + '\s*?=\s*?', key_val_annotations, re.DOTALL) and
                                 re.search(i + '\s*?=\s*?', key_val_annotations, re.DOTALL).start() > index
                     ]
-                            
+
                     next_attrb_index = min(next_attrb_list) if next_attrb_list else len(key_val_annotations)
-    
+
                     raw_attrb = key_val_annotations[index:next_attrb_index]
                     key_val = greedy_key_val_rgx.search(raw_attrb)
 
@@ -169,13 +172,13 @@ def parse_api_operation(annotations):
                     key_val_list.append((attrb_key, attrb_val))
 
             key_val_list.extend(parse_tags(key_val_annotations))
-    
+
     return dict(key_val_list)
-    
+
 def parse_tags(tags_annotation):
     # takes a tag annotation and returns a list containing a single tuple
     # as the key-value pair: ('tags', ["pet", "animal"])
-    
+
     tags_regex = re.compile('(tags)\s*?=\s*?\{(.*?)\}', re.DOTALL)
     tags_list = tags_regex.findall(tags_annotation)
 
@@ -187,7 +190,7 @@ def parse_tags(tags_annotation):
 
 def parse_api_responses(annotations):
     # takes a set of annotations and returns a dict of attributes contained
-    # in @ApiResponses tag body  
+    # in @ApiResponses tag body
     api_responses = []
 
     key_val_regex = re.compile('(\w+)\s*?=\s*?(".*?"|[0-9]{3})', re.DOTALL)
@@ -208,13 +211,13 @@ def parse_api_responses(annotations):
 
     else:
         return None
-        
+
 def parse_implicit_params(annotations):
     # takes a set of annotations and returns a dict of attributes contained
     # in @ApiImplicitParams tag body
 
     implicit_params = []
-    
+
     greedy_key_val_rgx = re.compile('(\w+)\s*?=\s*?(".*"|true|false)', re.DOTALL)
     inner_tag_regex = re.compile('@ApiImplicitParams\((.*?}).*?\)', re.DOTALL)
 
@@ -227,39 +230,39 @@ def parse_implicit_params(annotations):
 
         for param in param_list[1:]:
             key_val_list = []
-            
+
             attrb_list = ['access', 'allowableValues', 'allowMultiple',
                 'dataType', 'defaultValue', 'example', 'examples',
                 'name', 'paramType', 'required', 'value']
-            
+
             for attrb in attrb_list:
                 attrb_regex = re.compile(attrb + '\s*?=\s*?', re.DOTALL)
                 attrb_match = attrb_regex.search(param)
-                
+
                 curr_attrb_index = attrb_list.index(attrb)
-                
+
                 if attrb_match:
                     index = attrb_match.start()
-                    
+
                     # get the index of the adjacent attribute
                     next_attrb_list = [
                             re.search(i + '\s*?=\s*?', param, re.DOTALL).start()
                             # all the attributes except the current one being analyzed
                             for i in attrb_list[:curr_attrb_index] + attrb_list[(curr_attrb_index + 1):]
-                            
-                            if  re.search(i + '\s*?=\s*?', param, re.DOTALL) and 
+
+                            if  re.search(i + '\s*?=\s*?', param, re.DOTALL) and
                                 re.search(i + '\s*?=\s*?', param, re.DOTALL).start() > index
                     ]
-                            
+
                     next_attrb_index = min(next_attrb_list) if next_attrb_list else len(param)
-    
+
                     raw_attrb = param[index:next_attrb_index]
                     key_val = greedy_key_val_rgx.search(raw_attrb)
-                    
+
                     attrb_key = key_val.group(1)
                     attrb_val = key_val.group(2)
                     key_val_list.append((attrb_key, attrb_val))
-                
+
             implicit_params.append(dict(key_val_list))
 
         return implicit_params
@@ -328,7 +331,7 @@ def parse_api(annotations):
     key_val_regex = re.compile('(\w+)\s*?=\s*?"(.*?)"', re.DOTALL)
     key_val_list = key_val_regex.findall(inner_content)
     key_val_list.extend(parse_tags(inner_content))
-    
+
     return dict(key_val_list)
 
 def get_api_annotated_files_old():
@@ -351,23 +354,23 @@ def get_api_annotated_files_old():
             file_list.append(curr_file)
 
     return file_list
-    
+
 def get_resource_model_lists(include_list, production):
     # returns a list of files that have been annotated with @Api signifying
     # that the file is a Swagger resource, as well as the start index of @Api(...)
     resource_list = []
     model_list = []
-    
+
     # read the include list and only add the production=true files
     if production:
-        for file_obj in include_list:          
+        for file_obj in include_list:
             if file_obj['production'] and file_obj['resource']:
                 file_path = '../api/' + file_obj['resource']
                 if os.path.isfile(file_path):
                     resource_list.append(file_path)
                 else:
                     print('WARNING: ' + file_path + ' does not exist')
-                                    
+
             if file_obj['production'] and file_obj['model']:
                 file_path = '../api/' + file_obj['model']
                 if os.path.isfile(file_path):
@@ -375,36 +378,36 @@ def get_resource_model_lists(include_list, production):
                 else:
                     print('WARNING: ' + file_path + ' does not exist')
     else:
-        for file_obj in include_list:          
+        for file_obj in include_list:
             if file_obj['resource']:
                 file_path = '../api/' + file_obj['resource']
                 if os.path.isfile(file_path):
                     resource_list.append(file_path)
                 else:
                     print('WARNING: ' + file_path + ' does not exist')
-                    
+
             if file_obj['model']:
                 file_path = '../api/' + file_obj['model']
                 if os.path.isfile(file_path):
                     model_list.append(file_path)
                 else:
                     print('WARNING: ' + file_path + ' does not exist')
-                    
+
     return resource_list, model_list
 
 def get_top_level_tags(include_list, production):
-    # returns a list of all the tags plus their descriptions   
+    # returns a list of all the tags plus their descriptions
     tag_list = []
-    
+
     if production:
-        for file_obj in include_list:          
+        for file_obj in include_list:
             if file_obj['production'] and file_obj['name']:
                 tag_list.append((file_obj['name'], file_obj['description']))
     else:
-        for file_obj in include_list:          
+        for file_obj in include_list:
             if file_obj['name']:
                 tag_list.append((file_obj['name'], file_obj['description']))
-                
+
     return tag_list
 
 def logger(msg):
