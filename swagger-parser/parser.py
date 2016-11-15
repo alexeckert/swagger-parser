@@ -5,6 +5,7 @@ import assembler
 import json
 import argparse
 import os
+import codecs
 
 ################################################
 PROJECT_INFO = '../api/SwaggerConfig.json'
@@ -53,9 +54,9 @@ def parse_class(source_file, production):
     # logic to extract the class data and associated annotations
 
     # find api declaration associated to the class
-    with open(source_file) as curr_file:
-        code = curr_file.read()
-
+    curr_file = codecs.open(source_file, "r", "utf-8")
+    code = curr_file.read()
+    curr_file.close()
     matches = re.search('(/\*api(.*?)(public|private|protected|)(.*?)class(.*?){)', code, re.DOTALL)
 
     class_annotations = matches.group(0)
